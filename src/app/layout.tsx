@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -18,40 +18,57 @@ export const metadata: Metadata = {
   description: 'Discover, launch, and manage AI-powered applications in one place.',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+// viewport-fit=cover enables env(safe-area-inset-*) on iOS Safari
+export const viewport: Viewport = {
+  width:        'device-width',
+  initialScale: 1,
+  viewportFit:  'cover',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
       <body>
         <SessionProvider>
           <AuthProvider>
 
-            {/* ── Mobile-only logo header — fixed at top, hidden on desktop ── */}
-            <div className="sm:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-center bg-[#FDFDF9]/92 backdrop-blur-sm border-b border-stone-100/60" style={{ height: '52px' }}>
-              <Link href="/" aria-label="Imagine — home">
-                <Image
-                  src="/imagine-logo.png"
-                  alt="Imagine"
-                  width={233}
-                  height={70}
-                  className="h-9 w-auto object-contain"
-                  priority
-                />
-              </Link>
+            {/*
+              ── Mobile logo header ─────────────────────────────────────────
+              Hidden on sm+. Fixed at top, respects iOS safe area by using
+              paddingTop: env(safe-area-inset-top) so the logo never overlaps
+              the status bar / Dynamic Island notch.
+            */}
+            <div
+              className="sm:hidden fixed top-0 inset-x-0 z-40 bg-white/50 backdrop-blur-md border-b border-black/[0.05]"
+              style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+            >
+              <div className="flex items-center justify-center h-[52px]">
+                <Link href="/" aria-label="Imagine — home">
+                  <Image
+                    src="/imagine-logo.png"
+                    alt="Imagine"
+                    width={233}
+                    height={70}
+                    className="h-9 w-auto object-contain"
+                    priority
+                  />
+                </Link>
+              </div>
             </div>
 
             <Navbar />
 
             {/*
-              Mobile:  pt-[52px] clears the logo header above.
-                       pb-28 (112px) clears the bottom nav (64px) + safe area (~34px) + breathing room.
-              Desktop: pt-[88px] clears the top pill navbar.
-                       pb-0 — no bottom nav.
+              paddingTop reads from --header-pt CSS variable (globals.css):
+                mobile  → calc(52px + env(safe-area-inset-top))
+                desktop → 88px
+              pb-28 on mobile clears the 64px bottom nav + iOS home bar.
+              sm:pb-0 resets it on desktop.
             */}
-            <main className="pt-[52px] sm:pt-[88px] pb-28 sm:pb-0">
+            <main
+              className="pb-28 sm:pb-0"
+              style={{ paddingTop: 'var(--header-pt)' }}
+            >
               {children}
             </main>
 

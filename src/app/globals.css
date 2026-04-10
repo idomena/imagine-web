@@ -7,6 +7,14 @@
    --------------------------------------------------------------------------- */
 
 :root {
+  /*
+   * --header-pt: top padding consumed by the fixed header.
+   *   mobile  → 52px content area + iOS safe-area-inset-top
+   *   desktop → 88px (pill navbar height)
+   * Overridden at sm breakpoint below.
+   */
+  --header-pt: calc(52px + env(safe-area-inset-top, 0px));
+
   /* Backgrounds */
   --color-background: 253 253 249;   /* #FDFDF9  warm cream canvas */
   --color-surface:    255 255 255;   /* #FFFFFF  cards, panels     */
@@ -25,6 +33,11 @@
   --color-accent-glow:80  170 155;   /* lighter teal */
 
   --ring-focus: rgb(var(--color-accent) / 0.35);
+}
+
+/* Override --header-pt for sm+ (desktop pill navbar is 88px) */
+@media (min-width: 640px) {
+  :root { --header-pt: 88px; }
 }
 
 /* ---------------------------------------------------------------------------

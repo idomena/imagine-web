@@ -1,52 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, LogOut,
-  LayoutGrid, Compass, Plus, Home, User,
+  LayoutDashboard, LogOut, LayoutGrid,
+  Compass, Plus, Home, User, Flame,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
-
-interface Category { id: string; name: string; slug?: string }
 
 export function Navbar() {
   const { user, logout, isLoading } = useAuth()
   const router   = useRouter()
   const pathname = usePathname()
 
-  const [catOpen,    setCatOpen]    = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
-
-  // Fetch categories once
-  useEffect(() => {
-    fetch('/api/categories')
-      .then(r => r.json())
-      .then((json: { data?: Category[] }) => setCategories(json.data ?? []))
-      .catch(() => {})
-  }, [])
-
-  // Close dropdowns on navigation
-  useEffect(() => { setCatOpen(false) }, [pathname])
-
   function handleLogout() { logout(); router.push('/') }
 
   const displayLabel = user?.displayName || user?.email?.split('@')[0] || ''
-  const isActive     = (href: string) => pathname === href || pathname.startsWith(href + '/')
-
-  // Shared row style (used in categories tray + desktop dropdowns)
-  const rowCls = (active: boolean) => cn(
-    'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors w-full',
-    active ? 'bg-stone-100 text-stone-900' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
-  )
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
   return (
     <>
       {/* ════════════════════════════════════════════════════════════════════
-          DESKTOP NAV  —  pill at top, hidden on mobile
+          DESKTOP NAV  —  floating pill at top, hidden on mobile
       ════════════════════════════════════════════════════════════════════ */}
       <header className="hidden sm:block sm:fixed sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:z-50 sm:w-[calc(100%-48px)] sm:max-w-[860px]">
         <nav className={cn(
@@ -68,6 +45,10 @@ export function Navbar() {
             <Link href="/categories" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150', isActive('/categories') ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100')}>
               <LayoutGrid className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <span className="text-sm font-medium">Categories</span>
+            </Link>
+            <Link href="/trending" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150', isActive('/trending') ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100')}>
+              <Flame className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="text-sm font-medium">Trending</span>
             </Link>
           </div>
 
@@ -114,58 +95,8 @@ export function Navbar() {
       </header>
 
       {/* ════════════════════════════════════════════════════════════════════
-          MOBILE — Categories tray  (floats above the bottom nav)
-      ════════════════════════════════════════════════════════════════════ */}
-      {catOpen && (
-        <>
-          {/* Tap-outside backdrop */}
-          <div
-            className="sm:hidden fixed inset-0 z-40"
-            onClick={() => setCatOpen(false)}
-            aria-hidden
-          />
-          {/* Tray panel */}
-          <div
-            className={cn(
-              'sm:hidden fixed inset-x-4 z-50',
-              'rounded-2xl overflow-hidden',
-              'bg-white/95 backdrop-blur-xl',
-              'border border-stone-200/70',
-              'shadow-[0_-8px_32px_rgba(0,0,0,0.14)]',
-              'animate-fade-up',
-            )}
-            style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 8px)' }}
-          >
-            <Link
-              href="/categories"
-              onClick={() => setCatOpen(false)}
-              className="flex items-center justify-between px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600 transition-colors border-b border-stone-100"
-            >
-              All Categories
-              <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
-            </Link>
-            <div className="max-h-60 overflow-y-auto py-1">
-              {categories.length === 0 ? (
-                <p className="px-4 py-3 text-xs text-stone-400">Loading…</p>
-              ) : (
-                categories.map(cat => (
-                  <Link
-                    key={cat.id}
-                    href={`/explore?category=${encodeURIComponent(cat.name)}`}
-                    className={rowCls(false)}
-                    onClick={() => setCatOpen(false)}
-                  >
-                    {cat.name}
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ════════════════════════════════════════════════════════════════════
-          MOBILE BOTTOM NAV  —  fixed at bottom, hidden on sm+
+          MOBILE BOTTOM NAV  —  5 tabs, hidden on sm+
+          Home | Explore | [+ FAB] | Trending | Profile
       ════════════════════════════════════════════════════════════════════ */}
       <nav
         className="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-stone-200/70 bg-white/85 backdrop-blur-xl"
@@ -173,17 +104,15 @@ export function Navbar() {
       >
         <div className="flex items-center h-16 px-1">
 
-          {/* Home */}
           <BottomTab href="/" label="Home" active={pathname === '/'}>
             <Home className="h-[22px] w-[22px]" />
           </BottomTab>
 
-          {/* Explore */}
           <BottomTab href="/explore" label="Explore" active={isActive('/explore')}>
             <Compass className="h-[22px] w-[22px]" />
           </BottomTab>
 
-          {/* ── CENTER FAB — Submit ── */}
+          {/* ── Center FAB ── */}
           <div className="flex flex-1 items-center justify-center">
             <Link
               href="/submit"
@@ -200,25 +129,9 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Browse (categories) */}
-          <button
-            type="button"
-            onClick={() => setCatOpen(v => !v)}
-            aria-label="Browse categories"
-            aria-expanded={catOpen}
-            className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
-              catOpen || isActive('/categories') ? 'text-teal-700' : 'text-stone-400',
-            )}
-          >
-            <span className={cn(
-              'flex items-center justify-center rounded-xl p-1 transition-colors',
-              (catOpen || isActive('/categories')) && 'bg-teal-50',
-            )}>
-              <LayoutGrid className="h-[22px] w-[22px]" aria-hidden />
-            </span>
-            <span className="text-[10px] font-medium leading-none">Browse</span>
-          </button>
+          <BottomTab href="/trending" label="Trending" active={isActive('/trending')}>
+            <Flame className="h-[22px] w-[22px]" />
+          </BottomTab>
 
           {/* Profile / Sign In */}
           {isLoading ? (
@@ -234,10 +147,7 @@ export function Navbar() {
                 isActive('/dashboard') ? 'text-teal-700' : 'text-stone-400',
               )}
             >
-              <span className={cn(
-                'flex items-center justify-center rounded-xl p-0.5 transition-colors',
-                isActive('/dashboard') && 'bg-teal-50',
-              )}>
+              <span className={cn('flex items-center justify-center rounded-xl p-0.5 transition-colors', isActive('/dashboard') && 'bg-teal-50')}>
                 {user.avatarUrl ? (
                   <Image src={user.avatarUrl} alt={displayLabel} width={24} height={24} className="h-6 w-6 rounded-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
@@ -262,9 +172,7 @@ export function Navbar() {
 
 // ── Reusable bottom tab ───────────────────────────────────────────────────────
 
-function BottomTab({
-  href, label, active, children,
-}: {
+function BottomTab({ href, label, active, children }: {
   href:     string
   label:    string
   active:   boolean
@@ -278,10 +186,7 @@ function BottomTab({
         active ? 'text-teal-700' : 'text-stone-400 hover:text-stone-700',
       )}
     >
-      <span className={cn(
-        'flex items-center justify-center rounded-xl p-1 transition-colors',
-        active && 'bg-teal-50',
-      )}>
+      <span className={cn('flex items-center justify-center rounded-xl p-1 transition-colors', active && 'bg-teal-50')}>
         {children}
       </span>
       <span className="text-[10px] font-medium leading-none">{label}</span>

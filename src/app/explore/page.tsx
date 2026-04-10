@@ -93,7 +93,7 @@ function ExploreInner() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#FDFDF9]">
+    <div className="min-h-[calc(100vh-4rem)] bg-[#FDFDF9] animate-fade-in">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
 
         {/* Header */}
