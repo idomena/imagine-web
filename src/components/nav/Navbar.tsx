@@ -27,9 +27,9 @@ export function Navbar() {
   return (
     <>
       {/* Floating pill header */}
-      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-48px)] max-w-[860px]">
+      <header className="fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] sm:w-[calc(100%-48px)] max-w-[860px]">
         <nav className={cn(
-          'flex items-center gap-3 rounded-full px-3 py-1',
+          'flex items-center gap-2 sm:gap-3 rounded-full px-2 sm:px-3 py-1',
           'bg-white/75 backdrop-blur-md',
           'border border-white/20',
           'shadow-[0_4px_24px_rgba(0,0,0,0.10)]',
@@ -46,7 +46,7 @@ export function Navbar() {
               alt="Imagine"
               width={233}
               height={70}
-              className="h-[70px] w-auto object-contain"
+              className="h-[48px] sm:h-[70px] w-auto object-contain"
               priority
             />
           </Link>
@@ -54,7 +54,7 @@ export function Navbar() {
           {/* Spacer — pushes nav links to center */}
           <div className="flex-1" />
 
-          {/* Center nav links */}
+          {/* Center nav links — desktop only */}
           <ul className="hidden md:flex items-center gap-1" role="list">
             {NAV_LINKS.map(({ href, label }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
@@ -89,18 +89,21 @@ export function Navbar() {
 
           {/* Auth */}
           {isLoading ? (
-            <div className="h-8 w-32 animate-pulse rounded-full bg-stone-100" />
+            <div className="h-8 w-8 sm:w-32 animate-pulse rounded-full bg-stone-100" />
           ) : user ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
+              {/* Dashboard — icon only on mobile, icon + label on desktop */}
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-stone-500 rounded-full hover:bg-stone-100 hover:text-stone-900 transition-colors"
+                className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-sm font-medium text-stone-500 rounded-full hover:bg-stone-100 hover:text-stone-900 transition-colors"
+                title="Dashboard"
               >
-                <LayoutDashboard className="h-3.5 w-3.5" aria-hidden />
-                Dashboard
+                <LayoutDashboard className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />
+                <span className="hidden sm:inline">Dashboard</span>
               </Link>
 
-              <div className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 pl-1.5 pr-3 py-1">
+              {/* Avatar — always visible; name hidden on mobile */}
+              <div className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 p-1 sm:pl-1.5 sm:pr-3">
                 {user.avatarUrl ? (
                   <Image
                     src={user.avatarUrl}
@@ -115,7 +118,7 @@ export function Navbar() {
                     {displayLabel[0] ?? '?'}
                   </div>
                 )}
-                <span className="max-w-[90px] truncate text-xs font-medium text-stone-700">
+                <span className="hidden sm:inline max-w-[90px] truncate text-xs font-medium text-stone-700">
                   {displayLabel}
                 </span>
               </div>
@@ -129,17 +132,17 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               <Link
                 href="/sign-in"
-                className="px-4 py-1.5 text-sm font-medium text-stone-600 rounded-full hover:bg-stone-100 transition-colors"
+                className="px-3 sm:px-4 py-1.5 text-sm font-medium text-stone-600 rounded-full hover:bg-stone-100 transition-colors"
               >
                 Log In
               </Link>
               <Link
                 href="/sign-up"
                 className={cn(
-                  'px-4 py-1.5 text-sm font-semibold rounded-full',
+                  'px-3 sm:px-4 py-1.5 text-sm font-semibold rounded-full',
                   'bg-teal-700 text-white',
                   'hover:bg-teal-600 transition-colors',
                   'shadow-sm',

@@ -195,16 +195,30 @@ export default function DashboardPage() {
               {displayLabel[0] ?? '?'}
             </div>
           )}
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-stone-900">
               {displayLabel ? `Hi, ${displayLabel.split(' ')[0]}` : 'My Apps'}
             </h1>
-            <p className="text-sm text-stone-500">{user?.email} — manage your apps</p>
+            <p className="text-sm text-stone-500 truncate">{user?.email} — manage your apps</p>
           </div>
+          {/* Add App button — always visible, prominent on mobile */}
+          <Link
+            href="/submit"
+            className={cn(
+              'relative z-10 flex shrink-0 items-center gap-1.5 rounded-full transition-colors',
+              'bg-teal-700 text-white hover:bg-teal-600',
+              'px-3 py-2 sm:px-4 sm:py-2',
+              'text-xs sm:text-sm font-semibold shadow-sm',
+            )}
+            aria-label="Submit a new app"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            <span className="hidden xs:inline sm:inline">Add App</span>
+          </Link>
         </div>
 
         {/* Stats */}
-        <div className="mb-8 grid grid-cols-3 gap-4">
+        <div className="mb-8 grid grid-cols-3 gap-3 sm:gap-4">
           <StatCard label="Total Apps"   value={apps.length}    icon={<LayoutDashboard className="h-4 w-4" />} color="stone"  />
           <StatCard label="Published"    value={publishedCount} icon={<CheckCircle className="h-4 w-4" />}     color="teal"   />
           <StatCard label="Total Visits" value={totalVisits}    icon={<MousePointerClick className="h-4 w-4"/>} color="indigo" />
@@ -524,10 +538,10 @@ function StatCard({ label, value, icon, color }: {
   const bg   = { stone: 'bg-stone-100', teal: 'bg-teal-50',    indigo: 'bg-indigo-50'    }[color]
   const text = { stone: 'text-stone-600', teal: 'text-teal-700', indigo: 'text-indigo-700' }[color]
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white px-5 py-4">
-      <div className={cn('mb-2 flex h-8 w-8 items-center justify-center rounded-lg', bg, text)}>{icon}</div>
-      <p className="text-2xl font-bold text-stone-900">{value}</p>
-      <p className="text-xs text-stone-500 mt-0.5">{label}</p>
+    <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3 sm:px-5 sm:py-4">
+      <div className={cn('mb-2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg', bg, text)}>{icon}</div>
+      <p className="text-xl sm:text-2xl font-bold text-stone-900">{value}</p>
+      <p className="text-[10px] sm:text-xs text-stone-500 mt-0.5">{label}</p>
     </div>
   )
 }

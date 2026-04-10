@@ -133,7 +133,7 @@ export default async function HomePage() {
         />
 
         {/* ── Content — centered single column ────────────────────────────── */}
-        <div className="relative z-10 flex min-h-[inherit] items-center justify-center px-6 pb-40 pt-56">
+        <div className="relative z-10 flex min-h-[inherit] items-center justify-center px-5 sm:px-6 pb-20 sm:pb-40 pt-32 sm:pt-56">
           <div className="flex flex-col items-center text-center">
 
             {/* Badge */}
@@ -143,36 +143,36 @@ export default async function HomePage() {
             </div>
 
             {/* Headline */}
-            <h1 className="animate-fade-up animation-delay-100 mt-10 max-w-4xl text-6xl font-extrabold leading-[1.05] tracking-tight text-stone-900 sm:text-7xl lg:text-[6rem]">
+            <h1 className="animate-fade-up animation-delay-100 mt-7 sm:mt-10 max-w-4xl text-4xl sm:text-6xl lg:text-[6rem] font-extrabold leading-[1.08] sm:leading-[1.05] tracking-tight text-stone-900">
               Discover &amp; launch{' '}
               <span className="gradient-text">AI&nbsp;apps</span>{' '}
               instantly
             </h1>
 
             {/* Subtitle */}
-            <p className="animate-fade-up animation-delay-200 mt-8 max-w-xs text-sm font-light leading-relaxed text-stone-400 sm:max-w-sm sm:text-base">
+            <p className="animate-fade-up animation-delay-200 mt-5 sm:mt-8 max-w-xs text-sm font-light leading-relaxed text-stone-400 sm:max-w-sm sm:text-base">
               Every app runs on its own URL. One click to launch.
             </p>
 
             {/* CTAs */}
-            <div className="animate-fade-up animation-delay-300 mt-14 flex flex-wrap justify-center gap-5">
+            <div className="animate-fade-up animation-delay-300 mt-8 sm:mt-14 flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-5 w-full max-w-xs sm:max-w-none">
               <Link
                 href="/explore"
-                className="inline-flex items-center gap-2 rounded-full bg-teal-700 px-9 py-4 text-sm font-semibold text-white shadow-lg shadow-teal-800/20 transition-all duration-200 hover:bg-teal-600 hover:-translate-y-0.5 hover:shadow-teal-700/30 active:scale-95"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-teal-700 px-8 sm:px-9 py-3.5 sm:py-4 text-sm font-semibold text-white shadow-lg shadow-teal-800/20 transition-all duration-200 hover:bg-teal-600 hover:-translate-y-0.5 hover:shadow-teal-700/30 active:scale-95"
               >
                 Explore Apps
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
               <Link
                 href="/submit"
-                className="animate-subtle-pulse inline-flex items-center gap-2 rounded-full border border-stone-300/70 bg-white/70 px-9 py-4 text-sm font-semibold text-stone-700 backdrop-blur-sm transition-all duration-200 hover:border-stone-400 hover:bg-white hover:-translate-y-0.5 active:scale-95"
+                className="animate-subtle-pulse inline-flex items-center justify-center gap-2 rounded-full border border-stone-300/70 bg-white/70 px-8 sm:px-9 py-3.5 sm:py-4 text-sm font-semibold text-stone-700 backdrop-blur-sm transition-all duration-200 hover:border-stone-400 hover:bg-white hover:-translate-y-0.5 active:scale-95"
               >
                 Submit Your App
               </Link>
             </div>
 
             {/* Social proof */}
-            <p className="animate-fade-up animation-delay-400 mt-12 text-xs font-light tracking-wide text-stone-400/80">
+            <p className="animate-fade-up animation-delay-400 mt-8 sm:mt-12 text-xs font-light tracking-wide text-stone-400/80">
               Free to browse · No sign-up required to explore
             </p>
 

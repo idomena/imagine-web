@@ -269,7 +269,7 @@ export function SubmitModal({ open, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6"
       role="dialog" aria-modal="true" aria-labelledby="submit-modal-title"
     >
       {/* Backdrop — stronger blur for cloud context */}
@@ -282,11 +282,11 @@ export function SubmitModal({ open, onClose }: Props) {
       {/* Panel */}
       <div className={cn(
         'animate-modal-in relative z-10 flex w-full max-w-2xl flex-col',
-        'rounded-3xl overflow-hidden',
-        'bg-white/88 backdrop-blur-xl',
+        'rounded-t-2xl sm:rounded-3xl overflow-hidden',
+        'bg-white/95 sm:bg-white/88 backdrop-blur-xl',
         'border border-white/60',
-        'shadow-[0_32px_80px_-8px_rgba(0,0,0,0.22)]',
-        'max-h-[90vh]',
+        'shadow-[0_-8px_40px_-4px_rgba(0,0,0,0.15)] sm:shadow-[0_32px_80px_-8px_rgba(0,0,0,0.22)]',
+        'max-h-[92vh] sm:max-h-[90vh]',
       )}>
 
         {/* ── Colour accent strip ─────────────────────────────────────────── */}
@@ -296,7 +296,7 @@ export function SubmitModal({ open, onClose }: Props) {
         />
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-8 py-5 shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 shrink-0">
           <div>
             <h2 id="submit-modal-title" className="text-lg font-semibold text-stone-900">
               Submit an App
@@ -400,13 +400,13 @@ export function SubmitModal({ open, onClose }: Props) {
 
         ) : (
           /* ── Form ── */
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6 overflow-y-auto px-8 py-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 sm:gap-6 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6">
 
             {/* ── Logo + Colour ─────────────────────────────────────────────── */}
-            <div className="flex items-start gap-6">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
 
               {/* Logo picker */}
-              <div className="flex flex-col items-center gap-2 shrink-0">
+              <div className="flex sm:flex-col items-center gap-3 sm:gap-2 shrink-0">
                 <p className="text-[11px] font-medium uppercase tracking-wider text-stone-400">Logo</p>
                 <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                 <button
@@ -513,7 +513,7 @@ export function SubmitModal({ open, onClose }: Props) {
                   </div>
                 </button>
               ) : (
-                <div className="grid grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {uploads.map((u, i) => (
                     <div key={i} className="relative aspect-[9/16] overflow-hidden rounded-xl border border-stone-200/80 bg-stone-50">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -548,7 +548,7 @@ export function SubmitModal({ open, onClose }: Props) {
 
               <div className="flex flex-col gap-4">
                 {/* Name + Slug */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="App Name" required>
                     <input
                       type="text" value={name} onChange={e => setName(e.target.value)}
@@ -578,7 +578,7 @@ export function SubmitModal({ open, onClose }: Props) {
                 </Field>
 
                 {/* App Link + Category */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="App Link" hint="Live URL to try your app" required>
                     <input
                       type="url" value={launchUrl} onChange={e => setLaunchUrl(e.target.value)}
@@ -622,7 +622,7 @@ export function SubmitModal({ open, onClose }: Props) {
             )}
 
             {/* ── Actions ──────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-end gap-3 pt-2 pb-1">
+            <div className="flex items-center justify-end gap-2 sm:gap-3 pt-2 pb-1">
               <button
                 type="button"
                 onClick={handleClose}
