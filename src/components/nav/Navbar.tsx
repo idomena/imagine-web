@@ -11,8 +11,6 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
-
 interface Category { id: string; name: string; slug?: string }
 
 export function Navbar() {
@@ -27,9 +25,9 @@ export function Navbar() {
   const menuRef = useRef<HTMLDivElement>(null)
   const catRef  = useRef<HTMLDivElement>(null)
 
-  // Fetch categories once for the dropdown
+  // Fetch categories from the Next.js proxy route (same-origin, cached 5 min)
   useEffect(() => {
-    fetch(`${API_BASE}/api/v1/categories`)
+    fetch('/api/categories')
       .then(r => r.json())
       .then((json: { data?: Category[] }) => setCategories(json.data ?? []))
       .catch(() => {})
@@ -207,8 +205,9 @@ export function Navbar() {
                     {categories.map(cat => (
                       <Link
                         key={cat.id}
-                        href={`/categories/${cat.slug ?? cat.id}`}
-                        className={dropRowCls(isActive(`/categories/${cat.slug ?? cat.id}`))}
+                        href={`/explore?category=${encodeURIComponent(cat.name)}`}
+                        className={dropRowCls(false)}
+                        onClick={() => setCatOpen(false)}
                       >
                         {cat.name}
                       </Link>

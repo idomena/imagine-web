@@ -90,9 +90,9 @@ export function SubmitModal({ open, onClose }: Props) {
 
   const bypassDupeCheck = useRef(false)
 
-  // Fetch categories once
+  // Fetch categories from the Next.js proxy route (same-origin, cached 5 min)
   useEffect(() => {
-    fetch(`${API_BASE}/api/v1/categories`)
+    fetch('/api/categories')
       .then(r => r.json())
       .then((json: { data?: { id: string; name: string }[] }) => {
         setCategories(json.data ?? [])
@@ -257,6 +257,11 @@ export function SubmitModal({ open, onClose }: Props) {
           screenshotJson.error?.message ?? screenshotJson.message ?? `Screenshot upload failed (${screenshotRes.status})`
         )
       }
+
+      // Step 4 — submit for review (DRAFT → SUBMITTED)
+      await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader },
+      }).catch(() => {}) // non-fatal: app is created even if queue fails
 
       setFormStatus('success')
     } catch (err) {

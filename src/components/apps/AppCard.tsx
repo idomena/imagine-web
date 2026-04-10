@@ -17,9 +17,12 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
   const domain    = extractDomain(app.launchUrl)
   const hasLaunch = Boolean(app.launchUrl)
 
+  const appPath = `/apps/${app.slug ?? app.id}`
+
   return (
     <article
       className={cn(
+        'animate-fade-in',
         'group relative flex items-center gap-4 overflow-hidden rounded-2xl',
         'border border-stone-200/80 bg-white',
         'px-4 py-3.5 sm:px-5',
@@ -36,7 +39,7 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
 
       {/* Invisible details overlay */}
       <Link
-        href={`/apps/${app.id}`}
+        href={appPath}
         className="absolute inset-0 z-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
         aria-label={`View details for ${app.name}`}
       />

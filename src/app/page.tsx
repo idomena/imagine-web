@@ -16,14 +16,23 @@ interface FeedData {
   error?:     string
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
 async function getFeedData(): Promise<FeedData> {
   try {
     const opts = { next: { revalidate: 60 } } as RequestInit
     const [appsRes, catsRes] = await Promise.all([
-      apiClient.get<ApiResponse<Paginated<App>>>('/api/v1/apps?limit=30', opts),
+      apiClient.get<ApiResponse<Paginated<App>>>('/api/v1/apps?limit=50', opts),
       apiClient.get<ApiResponse<Category[]>>('/api/v1/categories', opts),
     ])
-    return { apps: appsRes.data.items, categories: catsRes.data }
+    return { apps: shuffle(appsRes.data.items), categories: catsRes.data }
   } catch {
     return { apps: [], categories: [], error: 'Could not reach the API.' }
   }
