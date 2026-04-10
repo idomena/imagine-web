@@ -19,7 +19,6 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
   useEffect(() => {
     if (!mobileOpen) return
     const handler = (e: MouseEvent) => {
@@ -31,7 +30,6 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handler)
   }, [mobileOpen])
 
-  // Close on navigation
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   function handleLogout() {
@@ -45,15 +43,19 @@ export function Navbar() {
   return (
     <header className="fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] sm:w-[calc(100%-48px)] max-w-[860px]">
       <nav className={cn(
-        // 3-column flex: [flex-1 left] [shrink-0 center] [flex-1 right]
-        'flex items-center px-2.5 sm:px-3',
-        'rounded-full bg-white/75 backdrop-blur-md',
+        // Three-column flex: [flex-1 left] [shrink-0 center] [flex-1 right]
+        // overflow-hidden on the two flex-1 columns prevents them from
+        // ever squeezing the center '+' button out of true center.
+        'flex items-center',
+        'px-3 sm:px-4',           // ← increased pill side padding
+        'rounded-full',
+        'bg-white/75 backdrop-blur-md',
         'border border-white/20',
         'shadow-[0_4px_24px_rgba(0,0,0,0.10)]',
       )}>
 
-        {/* ══ LEFT COLUMN — flex-1 ════════════════════════════════════════════ */}
-        <div className="flex flex-1 items-center gap-0.5 sm:gap-1 min-w-0 py-1">
+        {/* ══ LEFT — flex-1, overflow-hidden keeps center truly centered ════ */}
+        <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0 py-1.5">
 
           {/* Logo */}
           <Link
@@ -66,57 +68,56 @@ export function Navbar() {
               alt="Imagine"
               width={233}
               height={70}
-              // 30 % taller than original 48px; capped at 120px wide on mobile
-              // so the '+' center button always has clear breathing room
-              className="h-[62px] w-auto max-w-[120px] sm:max-w-none sm:h-[70px] object-contain object-left"
+              // Mobile: 56 px tall, capped at 100 px wide — fits cleanly in the
+              // ~137 px flex-1 column alongside the Explore icon.
+              // Desktop: natural 70 px height, no width cap needed.
+              className="h-[56px] w-auto max-w-[100px] sm:max-w-none sm:h-[70px] object-contain object-left"
               priority
             />
           </Link>
 
-          {/* Explore — text on desktop, icon on mobile */}
+          {/* ── Explore ──────────────────────────────────────────────────── */}
+          {/* Mobile: icon only  |  Desktop: icon + label */}
           <Link
             href="/explore"
             className={cn(
               'flex shrink-0 items-center gap-1.5 rounded-full transition-all duration-150',
-              // Mobile: icon only (compact square)
-              'p-2 md:px-3.5 md:py-1.5',
+              'p-2 sm:px-3.5 sm:py-1.5',
               isActive('/explore')
                 ? 'bg-stone-900 text-white'
                 : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100',
             )}
             title="Explore"
           >
-            <Compass className="h-[15px] w-[15px] md:h-3.5 md:w-3.5 shrink-0" aria-hidden />
-            <span className="hidden md:inline text-sm font-medium">Explore</span>
+            <Compass className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="hidden sm:inline text-sm font-medium">Explore</span>
           </Link>
 
-          {/* Categories — text on desktop, icon on mobile */}
+          {/* ── Categories — desktop only; mobile lives in hamburger ──────── */}
           <Link
             href="/categories"
             className={cn(
-              'flex shrink-0 items-center gap-1.5 rounded-full transition-all duration-150',
-              'p-2 md:px-3.5 md:py-1.5',
+              'hidden sm:flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150',
               isActive('/categories')
                 ? 'bg-stone-900 text-white'
                 : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100',
             )}
-            title="Categories"
           >
-            <LayoutGrid className="h-[15px] w-[15px] md:h-3.5 md:w-3.5 shrink-0" aria-hidden />
-            <span className="hidden md:inline text-sm font-medium">Categories</span>
+            <LayoutGrid className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span className="text-sm font-medium">Categories</span>
           </Link>
 
         </div>
 
-        {/* ══ CENTER COLUMN — shrink-0, always centered via flex-1 siblings ═══ */}
-        <div className="flex shrink-0 items-center justify-center px-3 sm:px-4">
+        {/* ══ CENTER — shrink-0, symmetric padding keeps '+' at exact 50% ══ */}
+        <div className="flex shrink-0 items-center justify-center px-3 sm:px-5">
           <Link
             href="/submit"
             className={cn(
-              'flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full shrink-0',
+              'flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full',
               'bg-teal-700 text-white',
               'hover:bg-teal-600 active:scale-95 transition-all duration-150',
-              'shadow-[0_2px_14px_rgba(20,184,166,0.42)]',
+              'shadow-[0_2px_14px_rgba(20,184,166,0.40)]',
             )}
             aria-label="Submit an app"
             title="Submit App"
@@ -125,8 +126,8 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* ══ RIGHT COLUMN — flex-1, content pushed to end ════════════════════ */}
-        <div className="flex flex-1 items-center justify-end gap-1">
+        {/* ══ RIGHT — flex-1, overflow-hidden mirrors left column ═══════════ */}
+        <div className="flex flex-1 items-center justify-end gap-1 overflow-hidden min-w-0">
 
           {isLoading ? (
             <div className="h-8 w-8 sm:w-28 animate-pulse rounded-full bg-stone-100" />
@@ -137,7 +138,7 @@ export function Navbar() {
               <Link
                 href="/dashboard"
                 className={cn(
-                  'hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  'hidden sm:flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                   isActive('/dashboard')
                     ? 'bg-stone-100 text-stone-900'
                     : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900',
@@ -147,8 +148,8 @@ export function Navbar() {
                 Dashboard
               </Link>
 
-              {/* Avatar — chip with name on desktop, bare circle on mobile */}
-              <div className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 p-1 sm:pl-1.5 sm:pr-3">
+              {/* Avatar chip — name visible on desktop, bare circle on mobile */}
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 p-1 sm:pl-1.5 sm:pr-3">
                 {user.avatarUrl ? (
                   <Image
                     src={user.avatarUrl}
@@ -168,17 +169,17 @@ export function Navbar() {
                 </span>
               </div>
 
-              {/* Logout — desktop only; mobile uses hamburger */}
+              {/* Logout — desktop only */}
               <button
                 onClick={handleLogout}
-                className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+                className="hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
                 title="Sign out"
               >
                 <LogOut className="h-3.5 w-3.5" aria-hidden />
               </button>
 
-              {/* Mobile hamburger — Dashboard + Sign out */}
-              <div ref={menuRef} className="relative sm:hidden">
+              {/* Mobile hamburger — Categories + Dashboard + Sign out */}
+              <div ref={menuRef} className="relative sm:hidden shrink-0">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(v => !v)}
@@ -201,6 +202,21 @@ export function Navbar() {
                     'shadow-[0_8px_32px_rgba(0,0,0,0.13)]',
                     'py-1.5',
                   )}>
+                    {/* Categories — promoted here from the mobile left bar */}
+                    <Link
+                      href="/categories"
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
+                        isActive('/categories')
+                          ? 'bg-stone-100 text-stone-900'
+                          : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
+                      )}
+                    >
+                      <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden />
+                      Categories
+                    </Link>
+
+                    {/* Dashboard */}
                     <Link
                       href="/dashboard"
                       className={cn(
@@ -213,7 +229,9 @@ export function Navbar() {
                       <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden />
                       Dashboard
                     </Link>
+
                     <div className="mx-3 my-1 h-px bg-stone-100" />
+
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -231,14 +249,14 @@ export function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className="px-3 sm:px-4 py-1.5 text-sm font-medium text-stone-600 rounded-full hover:bg-stone-100 transition-colors"
+                className="shrink-0 px-3 sm:px-4 py-1.5 text-sm font-medium text-stone-600 rounded-full hover:bg-stone-100 transition-colors"
               >
                 Log In
               </Link>
               <Link
                 href="/sign-up"
                 className={cn(
-                  'hidden sm:inline-flex px-4 py-1.5 text-sm font-semibold rounded-full',
+                  'hidden sm:inline-flex shrink-0 px-4 py-1.5 text-sm font-semibold rounded-full',
                   'bg-teal-700 text-white hover:bg-teal-600 transition-colors shadow-sm',
                 )}
               >
@@ -246,7 +264,7 @@ export function Navbar() {
               </Link>
 
               {/* Mobile hamburger — Sign Up for guests */}
-              <div ref={menuRef} className="relative sm:hidden">
+              <div ref={menuRef} className="relative sm:hidden shrink-0">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(v => !v)}
@@ -270,8 +288,21 @@ export function Navbar() {
                     'py-1.5',
                   )}>
                     <Link
+                      href="/categories"
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
+                        isActive('/categories')
+                          ? 'bg-stone-100 text-stone-900'
+                          : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
+                      )}
+                    >
+                      <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden />
+                      Categories
+                    </Link>
+                    <div className="mx-3 my-1 h-px bg-stone-100" />
+                    <Link
                       href="/sign-up"
-                      className="mx-2 my-1 flex items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors"
+                      className="mx-2 mb-1 flex items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors"
                     >
                       Sign Up
                     </Link>
