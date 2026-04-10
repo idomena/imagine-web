@@ -11,20 +11,39 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+
+interface Category { id: string; name: string; slug?: string }
+
 export function Navbar() {
   const { user, logout, isLoading } = useAuth()
   const router   = useRouter()
   const pathname = usePathname()
 
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const [mobileOpen,  setMobileOpen]  = useState(false)
+  const [catOpen,     setCatOpen]     = useState(false)
+  const [categories,  setCategories]  = useState<Category[]>([])
 
-  // Close on outside click OR outside touch
+  const menuRef = useRef<HTMLDivElement>(null)
+  const catRef  = useRef<HTMLDivElement>(null)
+
+  // Fetch categories once for the dropdown
   useEffect(() => {
-    if (!mobileOpen) return
+    fetch(`${API_BASE}/api/v1/categories`)
+      .then(r => r.json())
+      .then((json: { data?: Category[] }) => setCategories(json.data ?? []))
+      .catch(() => {})
+  }, [])
+
+  // Close hamburger or category dropdown on outside click/touch
+  useEffect(() => {
+    if (!mobileOpen && !catOpen) return
     const close = (e: MouseEvent | TouchEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (mobileOpen && menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMobileOpen(false)
+      }
+      if (catOpen && catRef.current && !catRef.current.contains(e.target as Node)) {
+        setCatOpen(false)
       }
     }
     document.addEventListener('mousedown', close)
@@ -33,32 +52,45 @@ export function Navbar() {
       document.removeEventListener('mousedown', close)
       document.removeEventListener('touchstart', close as EventListener)
     }
-  }, [mobileOpen])
+  }, [mobileOpen, catOpen])
 
-  // Close on route change
-  useEffect(() => { setMobileOpen(false) }, [pathname])
+  // Close both on route change
+  useEffect(() => { setMobileOpen(false); setCatOpen(false) }, [pathname])
 
-  function handleLogout() {
-    logout()
-    router.push('/')
-  }
+  function handleLogout() { logout(); router.push('/') }
 
   const displayLabel = user?.displayName || user?.email?.split('@')[0] || ''
   const isActive     = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
+  /* ─────────────────────────────────────────────────────────────────────────
+     Shared dropdown classes
+  ───────────────────────────────────────────────────────────────────────── */
+  const dropdownCls = cn(
+    'absolute right-0 top-[calc(100%+10px)] w-52 z-50',
+    'rounded-2xl overflow-hidden',
+    'bg-white/95 backdrop-blur-xl',
+    'border border-stone-200/70',
+    'shadow-[0_8px_32px_rgba(0,0,0,0.14)]',
+    'py-1.5',
+  )
+
+  const dropRowCls = (active: boolean) => cn(
+    'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors w-full',
+    active ? 'bg-stone-100 text-stone-900' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
+  )
+
   return (
     <header className="fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] sm:w-[calc(100%-48px)] max-w-[860px]">
       <nav className={cn(
-        // 3-column: [flex-1 left] [shrink-0 center] [flex-1 right]
         'flex items-center px-3 sm:px-4 rounded-full',
         'bg-white/75 backdrop-blur-md',
         'border border-white/20',
         'shadow-[0_4px_24px_rgba(0,0,0,0.10)]',
       )}>
 
-        {/* ── LEFT  ──────────────────────────────────────────────────────────
-            overflow-hidden guards the flex-1 allocation so the logo + icon
-            can never push the center button off-centre.                      */}
+        {/* ══ LEFT — [Logo] [Explore] ════════════════════════════════════════
+            overflow-hidden caps this column at its flex-1 size so the logo
+            can never push the center '+' off-centre.                        */}
         <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0 py-1.5">
 
           <Link
@@ -71,7 +103,10 @@ export function Navbar() {
               alt="Imagine"
               width={233}
               height={70}
-              className="h-[56px] w-auto max-w-[100px] sm:max-w-none sm:h-[70px] object-contain object-left"
+              // 90 px wide cap on mobile keeps left column within its ~134 px
+              // flex-1 budget (90 + 8 gap + 32 explore icon = 130 px ✓).
+              // Desktop: no width cap, full 70 px height.
+              className="h-[56px] w-auto max-w-[90px] sm:max-w-none sm:h-[70px] object-contain object-left"
               priority
             />
           </Link>
@@ -92,7 +127,7 @@ export function Navbar() {
             <span className="hidden sm:inline text-sm font-medium">Explore</span>
           </Link>
 
-          {/* Categories — desktop only; mobile: inside hamburger dropdown */}
+          {/* Categories — desktop only in the left column */}
           <Link
             href="/categories"
             className={cn(
@@ -108,11 +143,9 @@ export function Navbar() {
 
         </div>
 
-        {/* ── CENTER  ────────────────────────────────────────────────────────
-            pointer-events-none on the WRAPPER makes the padding area
-            click-through so it can never block the right column.
-            pointer-events-auto on the LINK restores clickability for the
-            button itself.                                                     */}
+        {/* ══ CENTER — '+' Submit ════════════════════════════════════════════
+            pointer-events-none on the wrapper so its px-3 padding area is
+            fully click-through and cannot block the adjacent columns.       */}
         <div className="flex shrink-0 items-center justify-center px-3 sm:px-5 pointer-events-none">
           <Link
             href="/submit"
@@ -130,20 +163,69 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* ── RIGHT  ─────────────────────────────────────────────────────────
-            z-30 + pointer-events-auto: sits above the center column in the
-            stacking order and explicitly receives all pointer events.
-            NO overflow-hidden: that would clip the dropdown and swallow
-            click / touch events on the avatar and hamburger button.
-            pr-2: keeps icons off the very edge of the pill on mobile.        */}
+        {/* ══ RIGHT — [Categories icon] [Avatar] [Hamburger] ════════════════
+            Mobile layout: Categories icon | Avatar chip | ≡ hamburger
+            z-30 + pointer-events-auto ensures this column is always above
+            the center wrapper and fully interactive.
+            NO overflow-hidden — that clips the dropdowns.
+            pr-2: breathing room from the pill edge on mobile.              */}
         <div className="relative z-30 flex flex-1 items-center justify-end gap-2 min-w-0 pointer-events-auto pr-2 sm:pr-0">
 
+          {/* ── Categories icon (mobile only) — tapping opens category picker */}
+          <div ref={catRef} className="relative shrink-0 sm:hidden">
+            <button
+              type="button"
+              onClick={() => { setCatOpen(!catOpen); setMobileOpen(false) }}
+              aria-label="Browse categories"
+              aria-expanded={catOpen}
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+                catOpen || isActive('/categories')
+                  ? 'bg-stone-900 text-white'
+                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800',
+              )}
+            >
+              <LayoutGrid className="h-[17px] w-[17px]" aria-hidden />
+            </button>
+
+            {catOpen && (
+              <div className={dropdownCls}>
+                {/* Header row linking to full /categories page */}
+                <Link
+                  href="/categories"
+                  className="flex items-center justify-between px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600 transition-colors"
+                >
+                  All Categories
+                  <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
+                </Link>
+                <div className="mx-3 mb-1 h-px bg-stone-100" />
+
+                {categories.length === 0 ? (
+                  <p className="px-4 py-3 text-xs text-stone-400">Loading…</p>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto">
+                    {categories.map(cat => (
+                      <Link
+                        key={cat.id}
+                        href={`/categories/${cat.slug ?? cat.id}`}
+                        className={dropRowCls(isActive(`/categories/${cat.slug ?? cat.id}`))}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── Auth ──────────────────────────────────────────────────────── */}
           {isLoading ? (
             <div className="h-8 w-8 sm:w-28 animate-pulse rounded-full bg-stone-100" />
 
           ) : user ? (
             <>
-              {/* Dashboard — desktop only (mobile: inside hamburger) */}
+              {/* Dashboard — desktop only */}
               <Link
                 href="/dashboard"
                 className={cn(
@@ -157,7 +239,7 @@ export function Navbar() {
                 Dashboard
               </Link>
 
-              {/* Avatar chip — bare circle on mobile, name visible on desktop */}
+              {/* Avatar chip — bare circle on mobile, name on desktop */}
               <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 p-1 sm:pl-1.5 sm:pr-3">
                 {user.avatarUrl ? (
                   <Image
@@ -187,11 +269,11 @@ export function Navbar() {
                 <LogOut className="h-3.5 w-3.5" aria-hidden />
               </button>
 
-              {/* ── Mobile hamburger (logged-in) ─────────────────────────── */}
+              {/* ── Mobile hamburger (logged-in): Dashboard + Sign out ─────── */}
               <div ref={menuRef} className="relative shrink-0 sm:hidden">
                 <button
                   type="button"
-                  onClick={() => setMobileOpen(!mobileOpen)}
+                  onClick={() => { setMobileOpen(!mobileOpen); setCatOpen(false) }}
                   aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
                   aria-expanded={mobileOpen}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition-colors"
@@ -203,44 +285,13 @@ export function Navbar() {
                 </button>
 
                 {mobileOpen && (
-                  <div className={cn(
-                    'absolute right-0 top-[calc(100%+10px)] w-52 z-50',
-                    'rounded-2xl overflow-hidden',
-                    'bg-white/95 backdrop-blur-xl',
-                    'border border-stone-200/70',
-                    'shadow-[0_8px_32px_rgba(0,0,0,0.14)]',
-                    'py-1.5',
-                  )}>
-                    <Link
-                      href="/categories"
-                      className={cn(
-                        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
-                        isActive('/categories')
-                          ? 'bg-stone-100 text-stone-900'
-                          : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
-                      )}
-                    >
-                      <LayoutGrid    className="h-4 w-4 shrink-0" aria-hidden />
-                      Categories
-                    </Link>
-                    <Link
-                      href="/dashboard"
-                      className={cn(
-                        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
-                        isActive('/dashboard')
-                          ? 'bg-stone-100 text-stone-900'
-                          : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
-                      )}
-                    >
+                  <div className={dropdownCls}>
+                    <Link href="/dashboard" className={dropRowCls(isActive('/dashboard'))}>
                       <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden />
                       Dashboard
                     </Link>
                     <div className="mx-3 my-1 h-px bg-stone-100" />
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors"
-                    >
+                    <button type="button" onClick={handleLogout} className={dropRowCls(false)}>
                       <LogOut className="h-4 w-4 shrink-0" aria-hidden />
                       Sign out
                     </button>
@@ -267,11 +318,11 @@ export function Navbar() {
                 Sign Up
               </Link>
 
-              {/* ── Mobile hamburger (guest) ─────────────────────────────── */}
+              {/* ── Mobile hamburger (guest): Sign Up ─────────────────────── */}
               <div ref={menuRef} className="relative shrink-0 sm:hidden">
                 <button
                   type="button"
-                  onClick={() => setMobileOpen(!mobileOpen)}
+                  onClick={() => { setMobileOpen(!mobileOpen); setCatOpen(false) }}
                   aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
                   aria-expanded={mobileOpen}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition-colors"
@@ -283,30 +334,10 @@ export function Navbar() {
                 </button>
 
                 {mobileOpen && (
-                  <div className={cn(
-                    'absolute right-0 top-[calc(100%+10px)] w-52 z-50',
-                    'rounded-2xl overflow-hidden',
-                    'bg-white/95 backdrop-blur-xl',
-                    'border border-stone-200/70',
-                    'shadow-[0_8px_32px_rgba(0,0,0,0.14)]',
-                    'py-1.5',
-                  )}>
-                    <Link
-                      href="/categories"
-                      className={cn(
-                        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
-                        isActive('/categories')
-                          ? 'bg-stone-100 text-stone-900'
-                          : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900',
-                      )}
-                    >
-                      <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden />
-                      Categories
-                    </Link>
-                    <div className="mx-3 my-1 h-px bg-stone-100" />
+                  <div className={dropdownCls}>
                     <Link
                       href="/sign-up"
-                      className="mx-2 mb-1 flex items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors"
+                      className="mx-2 my-1 flex items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors"
                     >
                       Sign Up
                     </Link>
