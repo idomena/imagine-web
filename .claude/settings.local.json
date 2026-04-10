@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/OR/Downloads/**)",
+      "Read(//c/Users/OR/Downloads//**)",
+      "Bash(cd /tmp)",
+      "Bash(unzip -o \"/c/Users/OR/Downloads/imagine-api-main.zip\" -d imagine-api)",
+      "Bash(unzip -o \"/c/Users/OR/Downloads/imagine-web-main.zip\" -d imagine-web)",
+      "Bash(cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
