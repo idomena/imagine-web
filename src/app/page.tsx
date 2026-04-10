@@ -65,7 +65,7 @@ export default async function HomePage() {
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section
-        className="relative -mt-[88px] overflow-hidden"
+        className="relative sm:-mt-[88px] overflow-hidden"
         style={{ minHeight: '100svh' }}
       >
 
