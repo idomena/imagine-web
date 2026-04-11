@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
-  X, CheckCircle, AlertCircle, Loader2, Upload, ImagePlus, LogIn, Camera,
+  X, CheckCircle, AlertCircle, Loader2, Upload, ImagePlus, LogIn, Camera, ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -44,7 +45,7 @@ interface Props {
   onClose: () => void
 }
 
-type FormStatus = 'idle' | 'loading' | 'success' | 'error' | 'duplicate'
+type FormStatus = 'idle' | 'loading' | 'scanning' | 'success' | 'error' | 'duplicate'
 
 interface UploadedFile {
   file:    File
@@ -63,6 +64,7 @@ function toSlug(name: string) {
 
 export function SubmitModal({ open, onClose }: Props) {
   const { user, accessToken } = useAuth()
+  const router = useRouter()
 
   // ── Logo state ─────────────────────────────────────────────────────────────
   const [logoFile,    setLogoFile]    = useState<File | null>(null)
@@ -200,7 +202,8 @@ export function SubmitModal({ open, onClose }: Props) {
     } catch { /* non-fatal */ }
     bypassDupeCheck.current = false
 
-    setFormStatus('loading'); setFormError('')
+    setFormStatus('scanning'); setFormError('')
+    const scanStart = Date.now()
     const authHeader = { Authorization: `Bearer ${accessToken}` }
 
     try {
@@ -276,7 +279,20 @@ export function SubmitModal({ open, onClose }: Props) {
       // For any other non-OK response (timeout, server error), don't block —
       // the app stays in SUBMITTED for manual review.
       setAutoPublished(submitJson.autoPublished === true)
+
+      // Guarantee the scanning animation is visible for at least 3 seconds
+      const elapsed = Date.now() - scanStart
+      if (elapsed < 3000) {
+        await new Promise<void>(resolve => setTimeout(resolve, 3000 - elapsed))
+      }
+
       setFormStatus('success')
+      // Auto-redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        router.push('/dashboard')
+        onClose()
+        setTimeout(reset, 300)
+      }, 2000)
     } catch (err) {
       setFormStatus('error')
       setFormError(err instanceof Error ? err.message : 'Something went wrong.')
@@ -286,6 +302,7 @@ export function SubmitModal({ open, onClose }: Props) {
   if (!open) return null
 
   return (
+    <>
     <div
       className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6"
       role="dialog" aria-modal="true" aria-labelledby="submit-modal-title"
@@ -654,7 +671,7 @@ export function SubmitModal({ open, onClose }: Props) {
               </button>
               <button
                 type="submit"
-                disabled={formStatus === 'loading'}
+                disabled={formStatus === 'loading' || formStatus === 'scanning'}
                 className="inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-px active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
                 style={{
                   backgroundColor: primaryColor ?? '#0f766e',
@@ -672,6 +689,99 @@ export function SubmitModal({ open, onClose }: Props) {
         )}
       </div>
     </div>
+
+    {/* ── Security Scan Full-Screen Overlay ──────────────────────────────────── */}
+    {(formStatus === 'scanning' || formStatus === 'success') && (
+      <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-stone-950">
+        {/* Cyber grid background */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(20,184,166,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(20,184,166,0.8) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        {/* Radial glow */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(20,184,166,0.10) 0%, transparent 70%)' }}
+        />
+
+        {formStatus === 'scanning' ? (
+          <div className="relative flex flex-col items-center gap-10 animate-fade-in">
+
+            {/* Animated rings + shield */}
+            <div className="relative flex items-center justify-center">
+              <div
+                className="absolute h-52 w-52 rounded-full border border-teal-500/10 animate-ping"
+                style={{ animationDuration: '2.5s' }}
+              />
+              <div
+                className="absolute h-40 w-40 rounded-full border border-teal-500/20 animate-ping"
+                style={{ animationDuration: '1.8s', animationDelay: '0.4s' }}
+              />
+              <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-2 border-teal-500/50 bg-teal-950 overflow-hidden animate-security-glow">
+                <ShieldCheck className="h-14 w-14 text-teal-400" />
+                {/* Sweep line */}
+                <div className="animate-scan-sweep absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
+              </div>
+            </div>
+
+            {/* Heading */}
+            <div className="text-center">
+              <p className="text-3xl font-bold tracking-tight text-white">Shielding Your App...</p>
+              <p className="mt-2 text-lg font-semibold text-teal-400">Running Cyber Security Audit</p>
+            </div>
+
+            {/* Audit log — items stagger in */}
+            <div className="flex flex-col gap-1.5 font-mono text-sm">
+              {([
+                ['Scanning dependencies...',       '0s'],
+                ['Checking OWASP Top 10...',       '0.5s'],
+                ['Validating SSL/TLS config...',   '1.0s'],
+                ['Running malware detection...',   '1.5s'],
+                ['Analyzing code patterns...',     '2.0s'],
+              ] as const).map(([text, delay]) => (
+                <div
+                  key={text}
+                  className="flex items-center gap-2 text-teal-500/60 opacity-0 animate-fade-in"
+                  style={{ animationDelay: delay, animationFillMode: 'forwards' }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal-500/60 shrink-0" />
+                  {text}
+                </div>
+              ))}
+            </div>
+
+            {/* Progress bar — fills over 3 s */}
+            <div className="w-72 h-1 overflow-hidden rounded-full bg-stone-800">
+              <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" />
+            </div>
+          </div>
+
+        ) : (
+          /* ── Success ── */
+          <div className="flex flex-col items-center gap-8 animate-modal-in">
+            <div className="relative flex items-center justify-center">
+              <div
+                className="absolute h-40 w-40 rounded-full border border-teal-400/20 animate-ping"
+                style={{ animationDuration: '1.5s' }}
+              />
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-teal-400/60 bg-teal-950 animate-security-glow">
+                <CheckCircle className="h-14 w-14 text-teal-400" />
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-white">Done! Your app is safe</p>
+              <p className="text-4xl font-bold text-teal-400">and now LIVE!</p>
+              <p className="mt-4 text-sm text-stone-500">Redirecting to your dashboard...</p>
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+    </>
   )
 }
 

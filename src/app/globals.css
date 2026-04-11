@@ -120,6 +120,23 @@
   to   { opacity: 1; transform: scale(1)    translateY(0);    }
 }
 
+@keyframes scan-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@keyframes scan-sweep {
+  0%   { transform: translateY(-8px); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(120px); opacity: 0; }
+}
+
+@keyframes security-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(20,184,166,0.3), 0 0 24px rgba(20,184,166,0.1); }
+  50%       { box-shadow: 0 0 24px rgba(20,184,166,0.6), 0 0 48px rgba(20,184,166,0.2); }
+}
+
 @keyframes subtle-pulse {
   0%, 100% { box-shadow: 0 0 0 0   rgba(120, 113, 108, 0.28); }
   50%       { box-shadow: 0 0 0 8px rgba(120, 113, 108, 0);    }
@@ -131,9 +148,12 @@
   .animate-float          { animation: float-y      3.5s ease-in-out infinite; }
   .animate-float-slow     { animation: float-y-slow 4.5s ease-in-out 0.6s infinite; }
   .animate-float-fast     { animation: float-y-fast 2.8s ease-in-out 1.2s infinite; }
-  .animate-modal-in       { animation: modal-in     0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
-  .animate-cta-pulse      { animation: cta-pulse    2.8s ease-in-out         infinite; }
-  .animate-subtle-pulse   { animation: subtle-pulse 4.0s ease-in-out 0.8s   infinite; }
+  .animate-modal-in       { animation: modal-in      0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-cta-pulse      { animation: cta-pulse     2.8s ease-in-out         infinite; }
+  .animate-subtle-pulse   { animation: subtle-pulse  4.0s ease-in-out 0.8s   infinite; }
+  .animate-scan-progress  { animation: scan-progress 3s   linear              forwards; }
+  .animate-scan-sweep     { animation: scan-sweep    1.8s ease-in-out         infinite; }
+  .animate-security-glow  { animation: security-glow 2.0s ease-in-out         infinite; }
   .animation-delay-100    { animation-delay: 100ms; }
   .animation-delay-200    { animation-delay: 200ms; }
   .animation-delay-300    { animation-delay: 300ms; }
