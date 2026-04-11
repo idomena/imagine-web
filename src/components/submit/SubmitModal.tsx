@@ -83,9 +83,10 @@ export function SubmitModal({ open, onClose }: Props) {
   const [launchUrl,    setLaunchUrl]    = useState('')
   const [categoryId,   setCategoryId]   = useState('')
   const [primaryColor, setPrimaryColor] = useState<string | null>(null)
-  const [formStatus,   setFormStatus]   = useState<FormStatus>('idle')
-  const [formError,    setFormError]    = useState('')
-  const [duplicateApp, setDuplicateApp] = useState<{ id: string; name: string } | null>(null)
+  const [formStatus,    setFormStatus]    = useState<FormStatus>('idle')
+  const [formError,     setFormError]     = useState('')
+  const [duplicateApp,  setDuplicateApp]  = useState<{ id: string; name: string } | null>(null)
+  const [autoPublished, setAutoPublished] = useState(false)
   const [categories,   setCategories]   = useState<{ id: string; name: string }[]>([])
 
   const bypassDupeCheck = useRef(false)
@@ -121,7 +122,7 @@ export function SubmitModal({ open, onClose }: Props) {
     setName(''); setSlug(''); setSlugTouched(false)
     setTagline(''); setDescription(''); setLaunchUrl(''); setCategoryId('')
     setPrimaryColor(null)
-    setFormStatus('idle'); setFormError(''); setDuplicateApp(null)
+    setFormStatus('idle'); setFormError(''); setDuplicateApp(null); setAutoPublished(false)
     bypassDupeCheck.current = false
   }
 
@@ -258,11 +259,23 @@ export function SubmitModal({ open, onClose }: Props) {
         )
       }
 
-      // Step 4 — submit for review (DRAFT → SUBMITTED)
-      await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
+      // Step 4 — submit for review + security audit (waits for result)
+      const submitRes  = await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader },
-      }).catch(() => {}) // non-fatal: app is created even if queue fails
-
+      })
+      const submitJson = await submitRes.json().catch(() => ({})) as {
+        success?: boolean
+        autoPublished?: boolean
+        error?: { message?: string; details?: string[] }
+      }
+      if (submitRes.status === 422) {
+        // Security scan rejected the app — surface the reason to the user
+        const detail = submitJson.error?.details?.join(' ') ?? submitJson.error?.message ?? 'Submission rejected by security scan.'
+        throw new Error(detail)
+      }
+      // For any other non-OK response (timeout, server error), don't block —
+      // the app stays in SUBMITTED for manual review.
+      setAutoPublished(submitJson.autoPublished === true)
       setFormStatus('success')
     } catch (err) {
       setFormStatus('error')
@@ -390,9 +403,13 @@ export function SubmitModal({ open, onClose }: Props) {
               <CheckCircle className="h-9 w-9" style={{ color: primaryColor ?? '#0d9488' }} />
             </div>
             <div>
-              <p className="text-xl font-semibold text-stone-900">App submitted!</p>
+              <p className="text-xl font-semibold text-stone-900">
+                {autoPublished ? 'You\'re Live!' : 'App Submitted!'}
+              </p>
               <p className="mt-1.5 text-sm font-light text-stone-400">
-                Your app is now live and ready to be discovered.
+                {autoPublished
+                  ? 'Your app passed security check and is now LIVE!'
+                  : 'Your app is under review. We\'ll let you know when it\'s published.'}
               </p>
             </div>
             <button
@@ -645,7 +662,7 @@ export function SubmitModal({ open, onClose }: Props) {
                 }}
               >
                 {formStatus === 'loading'
-                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</>
+                  ? <><Loader2 className="h-4 w-4 animate-spin" /> We are checking your app security...</>
                   : 'Submit App'
                 }
               </button>

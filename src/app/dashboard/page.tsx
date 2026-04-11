@@ -33,6 +33,7 @@ interface AppWithStats {
   categoryId:   string | null
   createdAt:    string
   _count:       { launchEvents: number }
+  securityAuditReport?: { safetyScore: number; decision: string } | null
 }
 
 // Status → { label, dot color, badge bg/text }
@@ -223,6 +224,23 @@ export default function DashboardPage() {
           <StatCard label="Published"    value={publishedCount} icon={<CheckCircle className="h-4 w-4" />}     color="teal"   />
           <StatCard label="Total Visits" value={totalVisits}    icon={<MousePointerClick className="h-4 w-4"/>} color="indigo" />
         </div>
+
+        {/* Security alert — shown when apps are held for manual review */}
+        {!loading && apps.some(a =>
+          a.status === 'SUBMITTED' && a.securityAuditReport != null
+        ) && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+            <div>
+              <p className="font-semibold">Security Review Required</p>
+              <p className="mt-0.5 font-light text-red-600">
+                {apps.filter(a => a.status === 'SUBMITTED' && a.securityAuditReport != null).length === 1
+                  ? 'One of your apps did not pass the automated security check and is awaiting manual review.'
+                  : `${apps.filter(a => a.status === 'SUBMITTED' && a.securityAuditReport != null).length} of your apps did not pass the automated security check and are awaiting manual review.`}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* App grid */}
         {loading ? (

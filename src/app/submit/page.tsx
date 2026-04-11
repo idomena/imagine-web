@@ -69,9 +69,10 @@ export default function SubmitPage() {
   const [launchUrl,    setLaunchUrl]    = useState('')
   const [categoryId,   setCategoryId]   = useState('')
   const [primaryColor, setPrimaryColor] = useState<string | null>(null)
-  const [formStatus,   setFormStatus]   = useState<FormStatus>('idle')
-  const [formError,    setFormError]    = useState('')
-  const [duplicateApp, setDuplicateApp] = useState<{ id: string; name: string } | null>(null)
+  const [formStatus,    setFormStatus]    = useState<FormStatus>('idle')
+  const [formError,     setFormError]     = useState('')
+  const [duplicateApp,  setDuplicateApp]  = useState<{ id: string; name: string } | null>(null)
+  const [autoPublished, setAutoPublished] = useState(false)
   const [categories,   setCategories]   = useState<{ id: string; name: string }[]>([])
 
   const bypassDupeCheck = useRef(false)
@@ -221,6 +222,23 @@ export default function SubmitPage() {
         )
       }
 
+      // Step 4 — submit for review + security audit (waits for result)
+      const submitRes  = await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader },
+      })
+      const submitJson = await submitRes.json().catch(() => ({})) as {
+        success?: boolean
+        autoPublished?: boolean
+        error?: { message?: string; details?: string[] }
+      }
+      if (submitRes.status === 422) {
+        // Security scan rejected the app — surface the reason to the user
+        const detail = submitJson.error?.details?.join(' ') ?? submitJson.error?.message ?? 'Submission rejected by security scan.'
+        throw new Error(detail)
+      }
+      // For any other non-OK response (timeout, server error), don't block —
+      // the app stays in SUBMITTED for manual review.
+      setAutoPublished(submitJson.autoPublished === true)
       setFormStatus('success')
     } catch (err) {
       setFormStatus('error')
@@ -391,9 +409,13 @@ export default function SubmitPage() {
                 <CheckCircle className="h-11 w-11" style={{ color: primaryColor ?? '#0d9488' }} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-stone-900">App submitted!</p>
+                <p className="text-2xl font-bold text-stone-900">
+                  {autoPublished ? 'You\'re Live!' : 'App Submitted!'}
+                </p>
                 <p className="mt-2 text-sm font-light text-stone-400">
-                  Your app is now live and ready to be discovered.
+                  {autoPublished
+                    ? 'Your app passed security check and is now LIVE!'
+                    : 'Your app is under review. We\'ll let you know when it\'s published.'}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -661,7 +683,7 @@ export default function SubmitPage() {
                   }}
                 >
                   {formStatus === 'loading'
-                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</>
+                    ? <><Loader2 className="h-4 w-4 animate-spin" /> We are checking your app security...</>
                     : 'Submit App'
                   }
                 </button>
