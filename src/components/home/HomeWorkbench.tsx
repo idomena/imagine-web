@@ -25,10 +25,11 @@ type ScanStatus = 'Clean' | 'Protected'
 type Phase      = 'idle' | 'scanning' | 'preview' | 'launching' | 'done' | 'error'
 
 interface ScanResult {
-  status:      ScanStatus
-  title:       string | null
-  description: string | null
-  logo:        string | null
+  status:            ScanStatus
+  title:             string | null
+  description:       string | null
+  logo:              string | null
+  suggestedCategory: string | null  // category name from scan-preview
 }
 
 interface TrendingApp {
@@ -36,6 +37,11 @@ interface TrendingApp {
   name:    string
   slug:    string
   iconUrl: string | null
+}
+
+interface Category {
+  id:   string
+  name: string
 }
 
 function toSlug(name: string): string {
@@ -70,16 +76,25 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   const [result,     setResult]     = useState<ScanResult | null>(null)
   const [errorMsg,   setErrorMsg]   = useState('')
   const [trending,   setTrending]   = useState<TrendingApp[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [launchedId, setLaunchedId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch trending apps on mount
+  // Fetch trending apps and categories on mount
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/apps?limit=20`)
       .then(r => r.json())
       .then((j: unknown) => {
         const items = (j as { data?: { items?: TrendingApp[] } }).data?.items ?? []
         setTrending(items)
+      })
+      .catch(() => {})
+
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then((j: unknown) => {
+        const cats = (j as { data?: Category[] }).data ?? []
+        setCategories(cats)
       })
       .catch(() => {})
   }, [])
@@ -122,14 +137,19 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
     if (!result || !accessToken) return
     setPhase('launching')
 
-    const trimmed  = url.trim()
-    const hostname = safeHostname(trimmed)
-    const appName  = (result.title ?? hostname).slice(0, 100)
-    const tagline  = (result.description ?? `App at ${hostname}`).slice(0, 200)
-    const slug     = toSlug(result.title ?? hostname)
+    const trimmed    = url.trim()
+    const hostname   = safeHostname(trimmed)
+    const appName    = (result.title ?? hostname).slice(0, 100)
+    const tagline    = (result.description ?? `App at ${hostname}`).slice(0, 200)
+    const slug       = toSlug(result.title ?? hostname)
+
+    // Resolve suggested category name → ID from the loaded list
+    const categoryId = result.suggestedCategory
+      ? categories.find(c => c.name.toLowerCase() === result.suggestedCategory!.toLowerCase())?.id
+      : undefined
 
     try {
-      // Step 1 — create draft
+      // Step 1 — create draft (pass logo URL + resolved categoryId)
       const createRes = await fetch(`${API_BASE}/api/v1/apps`, {
         method:  'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -139,6 +159,8 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
           tagline,
           launchUrl: trimmed,
           ...(result.description ? { description: result.description } : {}),
+          ...(result.logo        ? { iconUrl: result.logo }             : {}),
+          ...(categoryId         ? { categoryId }                       : {}),
         }),
       })
       const createJson = await createRes.json() as {

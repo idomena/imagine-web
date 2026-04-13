@@ -59,6 +59,49 @@ function toSlug(name: string) {
     .slice(0, 100)
 }
 
+// ── Client-side category keyword detection ────────────────────────────────────
+
+const CATEGORY_RULES: Array<{ keywords: string[]; name: string }> = [
+  { keywords: ['fitness', 'nutrition', 'workout', 'gym', 'exercise', 'yoga', 'diet',
+               'calories', 'running', 'sport', 'training', 'health', 'wellness'],
+    name: 'Sports & Health' },
+  { keywords: ['ai', 'chat', 'gpt', 'llm', 'assistant', 'productivity', 'notes',
+               'task', 'todo', 'workflow', 'automation', 'copilot', 'summarize'],
+    name: 'Productivity' },
+  { keywords: ['code', 'developer', 'api', 'github', 'programming', 'debug',
+               'deploy', 'devops', 'cli', 'sdk', 'repository', 'coding'],
+    name: 'Developer Tools' },
+  { keywords: ['finance', 'budget', 'money', 'invest', 'crypto', 'payment',
+               'invoice', 'accounting', 'expense', 'trading', 'bank'],
+    name: 'Finance' },
+  { keywords: ['game', 'gaming', 'play', 'puzzle', 'quiz', 'fun', 'entertainment',
+               'stream', 'music', 'video', 'movie'],
+    name: 'Entertainment' },
+  { keywords: ['education', 'learn', 'course', 'study', 'tutor', 'school',
+               'lesson', 'exam', 'language', 'math'],
+    name: 'Education' },
+  { keywords: ['design', 'image', 'photo', 'art', 'creative', 'canvas',
+               'editor', 'drawing', 'illustration', 'ui', 'mockup'],
+    name: 'Design & Creative' },
+  { keywords: ['social', 'community', 'forum', 'network', 'friend', 'message',
+               'connect', 'team', 'collaboration'],
+    name: 'Social' },
+  { keywords: ['analytics', 'data', 'dashboard', 'metrics', 'report',
+               'insight', 'chart', 'stats', 'tracking', 'monitor'],
+    name: 'Analytics' },
+  { keywords: ['security', 'privacy', 'vpn', 'protection', 'safe',
+               'scanner', 'firewall', 'threat', 'password', 'encrypt'],
+    name: 'Security' },
+]
+
+function suggestCategoryName(text: string): string | null {
+  const lower = text.toLowerCase()
+  for (const { keywords, name } of CATEGORY_RULES) {
+    if (keywords.some(kw => lower.includes(kw))) return name
+  }
+  return null
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function SubmitModal({ open, onClose }: Props) {
@@ -75,14 +118,15 @@ export function SubmitModal({ open, onClose }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ── Form state ─────────────────────────────────────────────────────────────
-  const [name,         setName]         = useState('')
-  const [slug,         setSlug]         = useState('')
-  const [slugTouched,  setSlugTouched]  = useState(false)
-  const [tagline,      setTagline]      = useState('')
-  const [description,  setDescription]  = useState('')
-  const [launchUrl,    setLaunchUrl]    = useState('')
-  const [categoryId,   setCategoryId]   = useState('')
-  const [primaryColor, setPrimaryColor] = useState<string | null>(null)
+  const [name,            setName]            = useState('')
+  const [slug,            setSlug]            = useState('')
+  const [slugTouched,     setSlugTouched]     = useState(false)
+  const [tagline,         setTagline]         = useState('')
+  const [description,     setDescription]     = useState('')
+  const [launchUrl,       setLaunchUrl]       = useState('')
+  const [categoryId,      setCategoryId]      = useState('')
+  const [categoryTouched, setCategoryTouched] = useState(false)
+  const [primaryColor,    setPrimaryColor]    = useState<string | null>(null)
   const [formStatus,       setFormStatus]       = useState<FormStatus>('idle')
   const [formError,        setFormError]        = useState('')
   const [rejectedThreats,  setRejectedThreats]  = useState<string[]>([])
@@ -106,6 +150,15 @@ export function SubmitModal({ open, onClose }: Props) {
     if (!slugTouched) setSlug(toSlug(name))
   }, [name, slugTouched])
 
+  // Auto-detect category from name + description (only before user picks manually)
+  useEffect(() => {
+    if (categoryTouched || categories.length === 0) return
+    const suggested = suggestCategoryName(`${name} ${description}`)
+    if (!suggested) return
+    const match = categories.find(c => c.name.toLowerCase() === suggested.toLowerCase())
+    if (match) setCategoryId(match.id)
+  }, [name, description, categories, categoryTouched])
+
   // Escape key
   useEffect(() => {
     if (!open) return
@@ -120,7 +173,7 @@ export function SubmitModal({ open, onClose }: Props) {
     setLogoFile(null); setLogoPreview(null)
     setUploads([]); setIsDragging(false)
     setName(''); setSlug(''); setSlugTouched(false)
-    setTagline(''); setDescription(''); setLaunchUrl(''); setCategoryId('')
+    setTagline(''); setDescription(''); setLaunchUrl(''); setCategoryId(''); setCategoryTouched(false)
     setPrimaryColor(null)
     setFormStatus('idle'); setFormError(''); setRejectedThreats([]); setDuplicateApp(null)
     bypassDupeCheck.current = false
@@ -598,7 +651,7 @@ export function SubmitModal({ open, onClose }: Props) {
                   <Field label="Category" required>
                     <select
                       value={categoryId}
-                      onChange={e => setCategoryId(e.target.value)}
+                      onChange={e => { setCategoryId(e.target.value); setCategoryTouched(true) }}
                       required
                       className={cn(inputCls, 'cursor-pointer')}
                     >

@@ -8,12 +8,55 @@ import { NextRequest, NextResponse } from 'next/server'
 // Chrome UA headers come from a real server IP.
 //
 // Returns:
-//   { status: 'Clean' | 'Protected', title, description, logo }
+//   { status: 'Clean' | 'Protected', title, description, logo, suggestedCategory }
 //
 // 'Protected' is returned whenever the site blocks or fails the fetch —
 // it is not a security judgement, just "we couldn't read it".
 // The full security analysis happens later in the backend scanApp() call.
 // ---------------------------------------------------------------------------
+
+// ── Category keyword detection (mirrors backend CATEGORY_RULES) ───────────────
+
+const CATEGORY_RULES: Array<{ keywords: string[]; name: string }> = [
+  { keywords: ['fitness', 'nutrition', 'workout', 'gym', 'exercise', 'yoga', 'diet',
+               'calories', 'running', 'sport', 'training', 'health', 'wellness'],
+    name: 'Sports & Health' },
+  { keywords: ['ai', 'chat', 'gpt', 'llm', 'assistant', 'productivity', 'notes',
+               'task', 'todo', 'workflow', 'automation', 'copilot', 'summarize'],
+    name: 'Productivity' },
+  { keywords: ['code', 'developer', 'api', 'github', 'programming', 'debug',
+               'deploy', 'devops', 'cli', 'sdk', 'repository', 'coding'],
+    name: 'Developer Tools' },
+  { keywords: ['finance', 'budget', 'money', 'invest', 'crypto', 'payment',
+               'invoice', 'accounting', 'expense', 'trading', 'bank'],
+    name: 'Finance' },
+  { keywords: ['game', 'gaming', 'play', 'puzzle', 'quiz', 'fun', 'entertainment',
+               'stream', 'music', 'video', 'movie'],
+    name: 'Entertainment' },
+  { keywords: ['education', 'learn', 'course', 'study', 'tutor', 'school',
+               'lesson', 'exam', 'language', 'math'],
+    name: 'Education' },
+  { keywords: ['design', 'image', 'photo', 'art', 'creative', 'canvas',
+               'editor', 'drawing', 'illustration', 'ui', 'mockup'],
+    name: 'Design & Creative' },
+  { keywords: ['social', 'community', 'forum', 'network', 'friend', 'message',
+               'connect', 'team', 'collaboration'],
+    name: 'Social' },
+  { keywords: ['analytics', 'data', 'dashboard', 'metrics', 'report',
+               'insight', 'chart', 'stats', 'tracking', 'monitor'],
+    name: 'Analytics' },
+  { keywords: ['security', 'privacy', 'vpn', 'protection', 'safe',
+               'scanner', 'firewall', 'threat', 'password', 'encrypt'],
+    name: 'Security' },
+]
+
+function suggestCategoryName(text: string): string | null {
+  const lower = text.toLowerCase()
+  for (const { keywords, name } of CATEGORY_RULES) {
+    if (keywords.some(kw => lower.includes(kw))) return name
+  }
+  return null
+}
 
 const FETCH_TIMEOUT_MS  = 8_000
 const MAX_CONTENT_BYTES = 262_144 // 256 KB — enough to cover any <head>
@@ -78,7 +121,7 @@ function extractMeta(html: string, pageUrl: string) {
   return { title, description, logo }
 }
 
-const PROTECTED = { status: 'Protected' as const, title: null, description: null, logo: null }
+const PROTECTED = { status: 'Protected' as const, title: null, description: null, logo: null, suggestedCategory: null }
 
 export async function POST(req: NextRequest) {
   let body: { url?: string }
@@ -129,10 +172,11 @@ export async function POST(req: NextRequest) {
       if (total > MAX_CONTENT_BYTES) { await reader.cancel(); break }
     }
 
-    const html = new TextDecoder().decode(Buffer.concat(chunks.map(c => Buffer.from(c))))
-    const meta = extractMeta(html, url)
+    const html              = new TextDecoder().decode(Buffer.concat(chunks.map(c => Buffer.from(c))))
+    const meta              = extractMeta(html, url)
+    const suggestedCategory = suggestCategoryName(`${meta.title ?? ''} ${meta.description ?? ''}`)
 
-    return NextResponse.json({ status: 'Clean' as const, ...meta })
+    return NextResponse.json({ status: 'Clean' as const, ...meta, suggestedCategory })
   } catch {
     return NextResponse.json(PROTECTED)
   }
