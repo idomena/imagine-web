@@ -142,6 +142,16 @@
   50%       { box-shadow: 0 0 0 8px rgba(120, 113, 108, 0);    }
 }
 
+@keyframes terminal-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes shield-pulse-red {
+  0%, 100% { box-shadow: 0 0 12px rgba(239,68,68,0.3), 0 0 24px rgba(239,68,68,0.1); }
+  50%       { box-shadow: 0 0 24px rgba(239,68,68,0.6), 0 0 48px rgba(239,68,68,0.2); }
+}
+
 @layer utilities {
   .animate-fade-up        { animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-fade-in        { animation: fade-in 0.5s ease both; }
@@ -154,6 +164,8 @@
   .animate-scan-progress  { animation: scan-progress 3s   linear              forwards; }
   .animate-scan-sweep     { animation: scan-sweep    1.8s ease-in-out         infinite; }
   .animate-security-glow  { animation: security-glow 2.0s ease-in-out         infinite; }
+  .animate-terminal-cursor { animation: terminal-cursor 1.0s step-end           infinite; }
+  .animate-shield-pulse-red { animation: shield-pulse-red 2.0s ease-in-out      infinite; }
   .animation-delay-100    { animation-delay: 100ms; }
   .animation-delay-200    { animation-delay: 200ms; }
   .animation-delay-300    { animation-delay: 300ms; }

@@ -45,7 +45,7 @@ interface Props {
   onClose: () => void
 }
 
-type FormStatus = 'idle' | 'loading' | 'scanning' | 'success' | 'error' | 'duplicate'
+type FormStatus = 'idle' | 'loading' | 'scanning' | 'success' | 'error' | 'duplicate' | 'rejected'
 
 interface UploadedFile {
   file:    File
@@ -272,9 +272,11 @@ export function SubmitModal({ open, onClose }: Props) {
         error?: { message?: string; details?: string[] }
       }
       if (submitRes.status === 422) {
-        // Security scan rejected the app — surface the reason to the user
+        // Security scan rejected — surface reason in the overlay (red shield)
         const detail = submitJson.error?.details?.join(' ') ?? submitJson.error?.message ?? 'Submission rejected by security scan.'
-        throw new Error(detail)
+        setFormError(detail)
+        setFormStatus('rejected')
+        return
       }
       // For any other non-OK response (timeout, server error), don't block —
       // the app stays in SUBMITTED for manual review.
@@ -287,12 +289,12 @@ export function SubmitModal({ open, onClose }: Props) {
       }
 
       setFormStatus('success')
-      // Auto-redirect to dashboard after 2 seconds
+      // Auto-redirect to dashboard after 1.5 seconds
       setTimeout(() => {
         router.push('/dashboard')
         onClose()
         setTimeout(reset, 300)
-      }, 2000)
+      }, 1500)
     } catch (err) {
       setFormStatus('error')
       setFormError(err instanceof Error ? err.message : 'Something went wrong.')
@@ -691,8 +693,8 @@ export function SubmitModal({ open, onClose }: Props) {
     </div>
 
     {/* ── Security Scan Full-Screen Overlay ──────────────────────────────────── */}
-    {(formStatus === 'scanning' || formStatus === 'success') && (
-      <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-stone-950">
+    {(formStatus === 'scanning' || formStatus === 'success' || formStatus === 'rejected') && (
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-stone-950">
         {/* Cyber grid background */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -705,10 +707,15 @@ export function SubmitModal({ open, onClose }: Props) {
         {/* Radial glow */}
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(20,184,166,0.10) 0%, transparent 70%)' }}
+          style={{
+            background: formStatus === 'rejected'
+              ? 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(239,68,68,0.08) 0%, transparent 70%)'
+              : 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(20,184,166,0.10) 0%, transparent 70%)',
+          }}
         />
 
         {formStatus === 'scanning' ? (
+          /* ── Scanning ── */
           <div className="relative flex flex-col items-center gap-10 animate-fade-in">
 
             {/* Animated rings + shield */}
@@ -734,49 +741,89 @@ export function SubmitModal({ open, onClose }: Props) {
               <p className="mt-2 text-lg font-semibold text-teal-400">Running Cyber Security Audit</p>
             </div>
 
-            {/* Audit log — items stagger in */}
-            <div className="flex flex-col gap-1.5 font-mono text-sm">
-              {([
-                ['Scanning dependencies...',       '0s'],
-                ['Checking OWASP Top 10...',       '0.5s'],
-                ['Validating SSL/TLS config...',   '1.0s'],
-                ['Running malware detection...',   '1.5s'],
-                ['Analyzing code patterns...',     '2.0s'],
-              ] as const).map(([text, delay]) => (
-                <div
-                  key={text}
-                  className="flex items-center gap-2 text-teal-500/60 opacity-0 animate-fade-in"
-                  style={{ animationDelay: delay, animationFillMode: 'forwards' }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-teal-500/60 shrink-0" />
-                  {text}
-                </div>
-              ))}
+            {/* Live terminal log — items stagger in via CSS */}
+            <div className="w-80 rounded-xl border border-stone-800 bg-stone-900/80 p-4 font-mono text-xs">
+              <div className="mb-2 flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
+                <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
+                <span className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
+                <span className="ml-2 text-stone-500">sentinel — scan</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                {([
+                  ['$ Connecting to Sentinel Scanner...', '0ms'],
+                  ['$ Fetching page content...', '600ms'],
+                  ['$ Analyzing inline scripts...', '1200ms'],
+                  ['$ Verifying form safety...', '1900ms'],
+                  ['$ Cross-referencing threat patterns...', '2700ms'],
+                  ['$ Generating security report...', '3500ms'],
+                ] as const).map(([text, delay]) => (
+                  <div
+                    key={text}
+                    className="text-teal-400/70 opacity-0 animate-fade-in"
+                    style={{ animationDelay: delay, animationFillMode: 'forwards' }}
+                  >
+                    {text}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Progress bar — fills over 3 s */}
-            <div className="w-72 h-1 overflow-hidden rounded-full bg-stone-800">
-              <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" />
+            {/* Progress bar — fills over 4 s */}
+            <div className="w-80 h-0.5 overflow-hidden rounded-full bg-stone-800">
+              <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" style={{ animationDuration: '4s' }} />
             </div>
           </div>
 
-        ) : (
-          /* ── Success ── */
+        ) : formStatus === 'success' ? (
+          /* ── Success — green checkmark, auto-redirect 1.5s ── */
           <div className="flex flex-col items-center gap-8 animate-modal-in">
             <div className="relative flex items-center justify-center">
               <div
+                className="absolute h-52 w-52 rounded-full border border-teal-400/10 animate-ping"
+                style={{ animationDuration: '1.4s' }}
+              />
+              <div
                 className="absolute h-40 w-40 rounded-full border border-teal-400/20 animate-ping"
-                style={{ animationDuration: '1.5s' }}
+                style={{ animationDuration: '1.8s', animationDelay: '0.3s' }}
               />
               <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-teal-400/60 bg-teal-950 animate-security-glow">
                 <CheckCircle className="h-14 w-14 text-teal-400" />
               </div>
             </div>
             <div className="text-center">
-              <p className="text-4xl font-bold text-white">Done! Your app is safe</p>
+              <p className="text-4xl font-bold text-white">Your app is safe</p>
               <p className="text-4xl font-bold text-teal-400">and now LIVE!</p>
               <p className="mt-4 text-sm text-stone-500">Redirecting to your dashboard...</p>
             </div>
+          </div>
+
+        ) : (
+          /* ── Rejected — red shield + reason ── */
+          <div className="flex flex-col items-center gap-8 animate-modal-in">
+            <div className="relative flex items-center justify-center">
+              <div
+                className="absolute h-44 w-44 rounded-full border border-red-500/15 animate-ping"
+                style={{ animationDuration: '2s' }}
+              />
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-red-500/50 bg-red-950"
+                style={{ boxShadow: '0 0 24px rgba(239,68,68,0.3)' }}>
+                <AlertCircle className="h-14 w-14 text-red-400" />
+              </div>
+            </div>
+            <div className="text-center max-w-sm">
+              <p className="text-3xl font-bold text-white">Submission Rejected</p>
+              <p className="mt-2 text-base font-semibold text-red-400">Security Threat Detected</p>
+              {formError && (
+                <p className="mt-4 text-sm font-light text-stone-400 leading-relaxed">{formError}</p>
+              )}
+            </div>
+            <button
+              onClick={() => { setFormStatus('idle'); setFormError('') }}
+              className="rounded-full border border-stone-700 px-8 py-3 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-white"
+            >
+              Dismiss
+            </button>
           </div>
         )}
       </div>
