@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
-  Shield, Loader2, Search, Rocket, ExternalLink,
-  AlertCircle, Flame, RotateCcw,
+  Shield, Loader2, Rocket, ExternalLink,
+  AlertCircle, Flame, RotateCcw, Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -29,7 +30,7 @@ interface ScanResult {
   title:             string | null
   description:       string | null
   logo:              string | null
-  suggestedCategory: string | null  // category name from scan-preview
+  suggestedCategory: string | null
 }
 
 interface TrendingApp {
@@ -82,7 +83,6 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   const [launchedId, setLaunchedId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch trending apps and categories on mount
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/apps?limit=20`)
       .then(r => r.json())
@@ -145,13 +145,11 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
     const tagline    = (result.description ?? `App at ${hostname}`).slice(0, 200)
     const slug       = toSlug(result.title ?? hostname)
 
-    // Resolve suggested category name → ID from the loaded list
     const categoryId = result.suggestedCategory
       ? categories.find(c => c.name.toLowerCase() === result.suggestedCategory!.toLowerCase())?.id
       : undefined
 
     try {
-      // Step 1 — create draft (pass logo URL + resolved categoryId)
       const createRes = await fetch(`${API_BASE}/api/v1/apps`, {
         method:  'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -173,13 +171,11 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
       const appId = createJson.data?.id
       if (!appId) throw new Error('No app ID returned')
 
-      // Step 2 — submit (triggers backend scan + auto-publish)
       await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
         method:  'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({}),
       })
-      // 422 = held for review (malicious) — still a valid outcome, app exists
 
       setLaunchedId(appId)
       setPhase('done')
@@ -194,22 +190,59 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   const showPreview = phase === 'preview' || phase === 'launching' || phase === 'done'
 
   return (
-    <section className="w-full min-h-[50svh] pt-20 sm:pt-28 pb-10 px-4">
-      <div className="mx-auto max-w-xl">
+    <section
+      className="w-full min-h-[100svh] pt-16 sm:pt-24 pb-16 px-4"
+      style={{
+        background: 'radial-gradient(ellipse 90% 45% at 50% 0%, rgba(167,139,250,0.13) 0%, transparent 65%)',
+      }}
+    >
+      <div className="mx-auto max-w-2xl">
 
-        {/* ── Greeting ─────────────────────────────────────────────────── */}
-        <div className="mb-7 text-center">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900">
-            Welcome back, {displayName.split(' ')[0]}
+        {/* ── Brand header ─────────────────────────────────────────────── */}
+        <div className="mb-8 flex flex-col items-center text-center">
+
+          {/* Logo */}
+          <Image
+            src="/imagine-logo.png"
+            alt="Imagine"
+            width={220}
+            height={66}
+            className="h-14 w-auto object-contain mb-4"
+            priority
+          />
+
+          {/* Gradient title */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] tracking-tight">
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-500 bg-clip-text text-transparent">
+              IMAGINE
+            </span>
+            {' '}
+            <span className="text-stone-800">Marketplace</span>
           </h1>
-          <p className="mt-1.5 text-sm text-stone-500">
-            Paste any URL to scan it and launch it on the marketplace.
+
+          {/* Micro-copy */}
+          <p className="mt-3 text-base sm:text-lg text-stone-500 max-w-md leading-relaxed">
+            Transform any URL into a powerful AI application{' '}
+            <span className="font-semibold text-stone-700">instantly.</span>
+          </p>
+
+          {/* Personalised whisper */}
+          <p className="mt-2 text-xs text-stone-400">
+            Welcome back,{' '}
+            <span className="font-medium text-stone-500">{displayName.split(' ')[0]}</span>
           </p>
         </div>
 
-        {/* ── URL input row ─────────────────────────────────────────────── */}
-        <div className="mb-4">
-          <div className="flex gap-2">
+        {/* ── Glassmorphism scan card ───────────────────────────────────── */}
+        <div className={cn(
+          'mb-5 rounded-3xl p-4 sm:p-5',
+          'border border-white/70 bg-white/55 backdrop-blur-2xl',
+          'shadow-2xl shadow-violet-500/10',
+          'transition-shadow duration-300',
+        )}>
+
+          {/* URL input row */}
+          <div className="flex gap-2.5">
             <input
               ref={inputRef}
               type="url"
@@ -218,22 +251,28 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               onKeyDown={e => e.key === 'Enter' && phase === 'idle' && void handleScan()}
               placeholder="https://your-ai-app.com"
               disabled={isScanning || isLaunching || phase === 'done'}
-              aria-label="Paste URL to Secure & Launch"
+              aria-label="Paste URL to scan and launch"
               className={cn(
-                'flex-1 rounded-2xl border px-4 py-3 text-sm outline-none transition-all',
-                'border-stone-200 bg-white placeholder:text-stone-400 text-stone-900',
-                'focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20',
+                'flex-1 rounded-2xl border px-4 py-3.5 text-sm outline-none transition-all duration-200',
+                'border-stone-200/80 bg-white/80 placeholder:text-stone-400 text-stone-900',
+                'shadow-sm',
+                'focus:border-violet-400/70 focus:ring-2 focus:ring-violet-500/20 focus:bg-white',
                 'disabled:opacity-50',
               )}
             />
 
-            {/* Action button — toggles between Scan / Reset */}
+            {/* Reset / Scan button */}
             {showPreview || phase === 'error' ? (
               <button
                 type="button"
                 onClick={reset}
                 disabled={isLaunching}
-                className="flex items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 hover:bg-stone-50 transition-colors disabled:opacity-50"
+                className={cn(
+                  'flex shrink-0 items-center gap-1.5 rounded-2xl px-4 py-3.5',
+                  'border border-stone-200/80 bg-white/80 text-sm font-medium text-stone-600',
+                  'hover:bg-white hover:border-stone-300 transition-all duration-150',
+                  'disabled:opacity-50',
+                )}
                 aria-label="Reset"
               >
                 <RotateCcw className="h-4 w-4" />
@@ -245,52 +284,58 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                 onClick={() => void handleScan()}
                 disabled={isScanning || !url.trim()}
                 className={cn(
-                  'flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all',
-                  'bg-teal-700 text-white hover:bg-teal-600 active:scale-95',
-                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
+                  'flex shrink-0 items-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-semibold transition-all duration-150',
+                  'bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-500',
+                  'text-white shadow-lg shadow-fuchsia-500/30',
+                  'hover:-translate-y-0.5 hover:shadow-xl hover:shadow-fuchsia-500/35',
+                  'active:scale-95',
+                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:translate-y-0 disabled:hover:shadow-lg',
                 )}
               >
                 {isScanning
                   ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Search className="h-4 w-4" />}
+                  : <Sparkles className="h-4 w-4" />}
                 <span className="hidden xs:inline">
-                  {isScanning ? 'Scanning…' : 'Scan'}
+                  {isScanning ? 'Scanning…' : 'Launch'}
                 </span>
               </button>
             )}
           </div>
 
-          {/* Label below input */}
-          {phase === 'idle' && !errorMsg && (
-            <p className="mt-2 text-center text-[11px] text-stone-400">
-              Paste URL to Secure &amp; Launch
-            </p>
-          )}
-
-          {errorMsg && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-              {errorMsg}
-            </p>
-          )}
+          {/* Hint / error */}
+          <div className="mt-2.5 min-h-[1rem]">
+            {errorMsg ? (
+              <p className="flex items-center gap-1.5 text-xs text-red-600">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {errorMsg}
+              </p>
+            ) : phase === 'idle' ? (
+              <p className="text-center text-[11px] text-stone-400/80">
+                Paste any URL · We scan for security threats automatically
+              </p>
+            ) : null}
+          </div>
         </div>
 
         {/* ── Scanning placeholder ─────────────────────────────────────── */}
         {isScanning && (
-          <div className="mb-4 flex items-center justify-center gap-3 rounded-2xl border border-stone-200 bg-white py-12 shadow-sm">
-            <Loader2 className="h-5 w-5 animate-spin text-teal-600" />
+          <div className="mb-5 flex items-center justify-center gap-3 rounded-2xl border border-violet-100 bg-violet-50/60 py-12 shadow-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
             <span className="text-sm text-stone-500">Fetching site metadata…</span>
           </div>
         )}
 
         {/* ── Preview card ─────────────────────────────────────────────── */}
         {showPreview && result && (
-          <div className="mb-4 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+          <div className={cn(
+            'mb-5 overflow-hidden rounded-2xl',
+            'border border-stone-200/80 bg-white shadow-lg shadow-stone-200/60',
+          )}>
             <div className="p-5">
 
               {/* App identity row */}
               <div className="flex items-start gap-4">
-                {/* Logo */}
+                {/* Logo / fallback */}
                 <div className="relative shrink-0 h-14 w-14 rounded-xl overflow-hidden border border-stone-100 bg-stone-50">
                   {result.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -301,8 +346,8 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                       onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <ExternalLink className="h-6 w-6 text-stone-300" />
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500 via-fuchsia-500 to-orange-400">
+                      <ExternalLink className="h-6 w-6 text-white/80" />
                     </div>
                   )}
                 </div>
@@ -331,17 +376,20 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             </div>
 
-            {/* Footer — hidden entirely for adult content violations */}
+            {/* Confirm & Launch footer */}
             {phase !== 'done' && result.status !== 'Adult' && (
-              <div className="border-t border-stone-100 bg-stone-50/60 px-5 py-4">
+              <div className="border-t border-stone-100 bg-stone-50/50 px-5 py-4">
                 <button
                   type="button"
                   onClick={() => void handleLaunch()}
                   disabled={isLaunching}
                   className={cn(
-                    'w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.99]',
-                    'bg-teal-700 text-white hover:bg-teal-600',
-                    'disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100',
+                    'w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all duration-150',
+                    'bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-500',
+                    'text-white shadow-lg shadow-fuchsia-500/25',
+                    'hover:shadow-xl hover:shadow-fuchsia-500/30 hover:-translate-y-0.5',
+                    'active:scale-[0.99]',
+                    'disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:translate-y-0',
                   )}
                 >
                   {isLaunching
@@ -351,7 +399,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             )}
 
-            {/* Adult content — hard block footer */}
+            {/* Adult content hard-block */}
             {result.status === 'Adult' && (
               <div className="border-t border-red-100 bg-red-50/60 px-5 py-3">
                 <p className="text-center text-xs font-medium text-red-600">
@@ -360,6 +408,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             )}
 
+            {/* Done state */}
             {phase === 'done' && (
               <div className="border-t border-teal-100 bg-teal-50/60 px-5 py-4">
                 <div className="flex items-center justify-between">
@@ -385,8 +434,8 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
 
         {/* ── Trending row ─────────────────────────────────────────────── */}
         {trending.length > 0 && (
-          <div className="mt-6">
-            <div className="mb-3 flex items-center gap-1.5">
+          <div className="mt-8">
+            <div className="mb-4 flex items-center gap-1.5">
               <Flame className="h-3.5 w-3.5 text-orange-400" aria-hidden />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
                 Trending
@@ -394,36 +443,52 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
             </div>
 
             {/* Horizontal scroll strip */}
-            <div className="-mx-4 px-4 overflow-x-auto">
-              <div className="flex gap-3 pb-2" style={{ width: 'max-content' }}>
-                {trending.map(app => {
-                  const hue = (app.name.charCodeAt(0) * 137) % 360
-                  return (
-                    <Link
-                      key={app.id}
-                      href={`/apps/${app.slug}`}
-                      title={app.name}
-                      className="group flex flex-col items-center gap-1.5"
-                    >
-                      <div className="h-12 w-12 overflow-hidden rounded-xl border border-stone-200 bg-stone-100 group-hover:border-teal-300 transition-colors">
-                        {app.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={app.iconUrl} alt={app.name} className="h-full w-full object-cover" />
-                        ) : (
-                          <div
-                            className="flex h-full w-full items-center justify-center text-sm font-bold text-white select-none"
-                            style={{ background: `hsl(${hue}deg 35% 65%)` }}
-                          >
-                            {app.name[0]?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <span className="w-12 text-center text-[10px] leading-tight text-stone-500 line-clamp-1">
-                        {app.name}
-                      </span>
-                    </Link>
-                  )
-                })}
+            <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
+              <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
+                {trending.map(app => (
+                  <Link
+                    key={app.id}
+                    href={`/apps/${app.slug}`}
+                    title={app.name}
+                    className="group flex flex-col items-center gap-2"
+                  >
+                    {/* Icon with scale + glow on hover */}
+                    <div className={cn(
+                      'h-14 w-14 overflow-hidden rounded-2xl',
+                      'border border-stone-200/80 bg-stone-100',
+                      'shadow-sm',
+                      'transition-all duration-200 ease-out',
+                      'group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-violet-500/20',
+                      'group-hover:border-violet-300/70',
+                    )}>
+                      {app.iconUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={app.iconUrl}
+                          alt={app.name}
+                          className="h-full w-full object-cover"
+                          onError={e => {
+                            const el = e.currentTarget as HTMLImageElement
+                            el.style.display = 'none'
+                            const parent = el.parentElement
+                            if (parent) {
+                              parent.classList.add('bg-gradient-to-br', 'from-violet-500', 'via-fuchsia-500', 'to-orange-400')
+                              parent.innerHTML = `<span class="flex h-full w-full items-center justify-center text-sm font-bold text-white select-none">${app.name[0]?.toUpperCase() ?? '?'}</span>`
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500 via-fuchsia-500 to-orange-400 text-sm font-bold text-white select-none">
+                          {app.name[0]?.toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    <span className="w-14 text-center text-[10px] leading-tight text-stone-500 group-hover:text-stone-700 transition-colors line-clamp-1">
+                      {app.name}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
