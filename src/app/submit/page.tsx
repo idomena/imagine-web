@@ -198,6 +198,7 @@ export default function SubmitPage() {
       // Step 4 — sentinel scan + publish (synchronous on backend, 5 s timeout)
       const subRes  = await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+        body: '{}',
       })
       const subJson = await subRes.json().catch(() => ({})) as {
         success?: boolean

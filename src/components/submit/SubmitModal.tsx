@@ -262,6 +262,7 @@ export function SubmitModal({ open, onClose }: Props) {
       // Step 4 — submit for review + security audit (waits for result)
       const submitRes  = await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: '{}',
       })
       const submitJson = await submitRes.json().catch(() => ({})) as {
         success?: boolean
