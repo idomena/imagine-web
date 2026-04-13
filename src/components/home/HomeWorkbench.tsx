@@ -21,7 +21,7 @@ import { useAuth } from '@/context/AuthContext'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
-type ScanStatus = 'Clean' | 'Protected'
+type ScanStatus = 'Clean' | 'Protected' | 'Adult'
 type Phase      = 'idle' | 'scanning' | 'preview' | 'launching' | 'done' | 'error'
 
 interface ScanResult {
@@ -59,11 +59,13 @@ function safeHostname(url: string): string {
 const SHIELD_STYLES: Record<ScanStatus, string> = {
   Clean:     'border-teal-200 bg-teal-50 text-teal-700',
   Protected: 'border-stone-200 bg-stone-100 text-stone-500',
+  Adult:     'border-red-200 bg-red-50 text-red-700',
 }
 
 const SHIELD_LABELS: Record<ScanStatus, string> = {
   Clean:     'No threats detected',
   Protected: 'Site is protected — scan limited',
+  Adult:     'Content Violation — Adult content is not allowed on Imagine.',
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -329,8 +331,8 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             </div>
 
-            {/* Footer */}
-            {phase !== 'done' && (
+            {/* Footer — hidden entirely for adult content violations */}
+            {phase !== 'done' && result.status !== 'Adult' && (
               <div className="border-t border-stone-100 bg-stone-50/60 px-5 py-4">
                 <button
                   type="button"
@@ -346,6 +348,15 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                     ? <><Loader2 className="h-4 w-4 animate-spin" /> Launching…</>
                     : <><Rocket className="h-4 w-4" /> Confirm &amp; Launch</>}
                 </button>
+              </div>
+            )}
+
+            {/* Adult content — hard block footer */}
+            {result.status === 'Adult' && (
+              <div className="border-t border-red-100 bg-red-50/60 px-5 py-3">
+                <p className="text-center text-xs font-medium text-red-600">
+                  This URL cannot be submitted to Imagine.
+                </p>
               </div>
             )}
 

@@ -121,7 +121,19 @@ function extractMeta(html: string, pageUrl: string) {
   return { title, description, logo }
 }
 
+// Adult platform hostnames — mirrors backend ADULT_PLATFORM_HOSTNAMES
+const ADULT_PLATFORM_HOSTNAMES = [
+  'pornhub', 'xvideos', 'xhamster', 'xnxx', 'xnn',
+  'brazzers', 'bangbros', 'realitykings', 'naughtyamerica',
+  'mofos', 'fakehub', 'teamskeet', 'digitalplayground',
+  'blacked', 'tushy', 'vixen',
+  'xtube', 'youporn', 'redtube', 'tube8', 'spankbang', 'eporner',
+  'chaturbate', 'stripchat', 'myfreecams', 'cam4', 'bongacams',
+  'adultempire', 'adultime', 'nubiles',
+]
+
 const PROTECTED = { status: 'Protected' as const, title: null, description: null, logo: null, suggestedCategory: null }
+const ADULT     = { status: 'Adult'     as const, title: null, description: null, logo: null, suggestedCategory: null }
 
 export async function POST(req: NextRequest) {
   let body: { url?: string }
@@ -132,11 +144,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
   }
 
-  // Reject obviously internal targets
+  // Reject obviously internal targets; also block known adult platforms immediately
   try {
-    const parsed = new URL(url)
+    const parsed   = new URL(url)
+    const hostname = parsed.hostname.toLowerCase()
+
     if (parsed.hostname === 'localhost' || parsed.hostname.endsWith('.local') || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(parsed.hostname)) {
       return NextResponse.json({ error: 'URL not allowed' }, { status: 400 })
+    }
+
+    // Block known adult platforms before any fetch
+    if (ADULT_PLATFORM_HOSTNAMES.some(p => hostname === p || hostname.endsWith(`.${p}`) || hostname.includes(p))) {
+      return NextResponse.json(ADULT)
     }
   } catch {
     return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
