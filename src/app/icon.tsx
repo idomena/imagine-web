@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 
+// 32×32 — browser tab favicon
 export const size        = { width: 32, height: 32 }
 export const contentType = 'image/png'
 
@@ -12,18 +13,19 @@ export default function Icon() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #14b8a6 0%, #6366f1 100%)',
-        borderRadius: '7px',
+        background: '#0e8f82',
+        borderRadius: '6px',
       }}
     >
       <span
         style={{
-          color: 'white',
-          fontSize: '22px',
-          fontWeight: 800,
-          fontFamily: 'sans-serif',
-          letterSpacing: '-0.03em',
+          color:      'white',
+          fontSize:   '22px',
+          fontWeight: 700,
+          fontFamily: 'serif',
+          fontStyle:  'italic',
           lineHeight: 1,
+          paddingTop: '3px',
         }}
       >
         I

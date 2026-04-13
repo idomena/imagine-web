@@ -4,21 +4,22 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name:             'Imagine Marketplace',
     short_name:       'Imagine',
-    description:      'The world\'s first AI-powered app marketplace. Discover, launch, and manage apps instantly.',
+    description:      "The world's first AI-powered app marketplace. Discover, launch, and manage apps instantly.",
     start_url:        '/',
     display:          'standalone',
-    background_color: '#f8fafc',
-    theme_color:      '#14b8a6',
+    background_color: '#ffffff',
+    theme_color:      '#0e8f82',
     icons: [
+      // Next.js serves /apple-icon at 512×512 — browsers scale for 192 too
       {
-        src:     '/icon',
-        sizes:   '32x32',
+        src:     '/apple-icon',
+        sizes:   '512x512',
         type:    'image/png',
         purpose: 'any',
       },
       {
         src:     '/apple-icon',
-        sizes:   '180x180',
+        sizes:   '512x512',
         type:    'image/png',
         purpose: 'maskable',
       },
