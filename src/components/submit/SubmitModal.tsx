@@ -268,8 +268,10 @@ export function SubmitModal({ open, onClose }: Props) {
       const submitJson = await submitRes.json().catch(() => ({})) as {
         success?: boolean
         autoPublished?: boolean
+        app?: { id: string }
         error?: { message?: string; details?: string[] }
       }
+
       if (submitRes.status === 422) {
         // Security scan rejected — show red shield overlay with threat list
         const threats = submitJson.error?.details ?? []
@@ -278,21 +280,19 @@ export function SubmitModal({ open, onClose }: Props) {
         return
       }
 
-      if (!submitRes.ok) {
-        throw new Error(submitJson.error?.message ?? `Submission failed (${submitRes.status})`)
+      if (submitRes.ok) {
+        // Scan passed — hold the overlay for the minimum 4 s so the checklist finishes
+        const elapsed = Date.now() - scanStart
+        if (elapsed < 4000) {
+          await new Promise<void>(resolve => setTimeout(resolve, 4000 - elapsed))
+        }
+        setFormStatus('success')
+        setTimeout(() => { window.location.href = '/dashboard' }, 1500)
+        return
       }
 
-      // Hold the scanning overlay for at least 4 seconds so the audit logs are readable
-      const elapsed = Date.now() - scanStart
-      if (elapsed < 4000) {
-        await new Promise<void>(resolve => setTimeout(resolve, 4000 - elapsed))
-      }
-
-      setFormStatus('success')
-      // Hard reload to dashboard after 1.5 seconds — forces a clean state
-      setTimeout(() => {
-        window.location.href = '/dashboard'
-      }, 1500)
+      // Any other non-ok status — surface the error
+      throw new Error(submitJson.error?.message ?? `Submission failed (${submitRes.status})`)
     } catch (err) {
       setFormStatus('error')
       setFormError(err instanceof Error ? err.message : 'Something went wrong.')

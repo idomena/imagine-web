@@ -204,6 +204,7 @@ export default function SubmitPage() {
       const subJson = await subRes.json().catch(() => ({})) as {
         success?: boolean
         autoPublished?: boolean
+        app?: { id: string }
         error?: { message?: string; details?: string[] }
       }
 
@@ -215,17 +216,17 @@ export default function SubmitPage() {
         return
       }
 
-      if (!subRes.ok) {
-        throw new Error(subJson.error?.message ?? `Submission failed (${subRes.status})`)
+      if (subRes.ok) {
+        // Scan passed — hold the overlay for the minimum 4 s so the checklist finishes
+        const elapsed = Date.now() - scanStart
+        if (elapsed < 4000) await new Promise<void>(r => setTimeout(r, 4000 - elapsed))
+        setFormStatus('success')
+        setTimeout(() => { window.location.href = '/dashboard' }, 1500)
+        return
       }
 
-      // Guarantee overlay is visible for at least 4 seconds
-      const elapsed = Date.now() - scanStart
-      if (elapsed < 4000) await new Promise<void>(r => setTimeout(r, 4000 - elapsed))
-
-      // Show green checkmark, then hard-reload into dashboard
-      setFormStatus('success')
-      setTimeout(() => { window.location.href = '/dashboard' }, 1500)
+      // Any other non-ok status — surface the error
+      throw new Error(subJson.error?.message ?? `Submission failed (${subRes.status})`)
 
     } catch (err) {
       // Pre-publish errors (network, validation) go back to the form
