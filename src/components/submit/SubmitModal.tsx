@@ -281,10 +281,10 @@ export function SubmitModal({ open, onClose }: Props) {
       }
 
       if (submitRes.ok) {
-        // Scan passed — hold the overlay for the minimum 4 s so the checklist finishes
+        // Scan passed — hold the overlay for at least 3.5 s so the checklist fully animates
         const elapsed = Date.now() - scanStart
-        if (elapsed < 4000) {
-          await new Promise<void>(resolve => setTimeout(resolve, 4000 - elapsed))
+        if (elapsed < 3500) {
+          await new Promise<void>(resolve => setTimeout(resolve, 3500 - elapsed))
         }
         setFormStatus('success')
         setTimeout(() => { window.location.href = '/dashboard' }, 1500)
@@ -736,7 +736,7 @@ export function SubmitModal({ open, onClose }: Props) {
 
           {/* Progress bar */}
           <div className="w-64 h-0.5 overflow-hidden rounded-full bg-stone-800">
-            <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" style={{ animationDuration: '4s' }} />
+            <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" style={{ animationDuration: '3.5s' }} />
           </div>
         </div>
 
