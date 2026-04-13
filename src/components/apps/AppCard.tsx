@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Play, Globe } from 'lucide-react'
@@ -107,14 +110,23 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function AppIcon({ name, iconUrl }: { name: string; iconUrl: string | null }) {
+  const [imgError, setImgError] = useState(false)
+
   // Gentle pastel hue for the placeholder
   const hue   = ((name.charCodeAt(0) ?? 65) * 137) % 360
   const style = { background: `hsl(${hue}deg 40% 88%)` }
 
-  if (iconUrl) {
+  if (iconUrl && !imgError) {
     return (
       <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-stone-200">
-        <Image src={iconUrl} alt="" fill sizes="48px" className="object-cover" />
+        <Image
+          src={iconUrl}
+          alt=""
+          fill
+          sizes="48px"
+          className="object-cover"
+          onError={() => setImgError(true)}
+        />
       </div>
     )
   }

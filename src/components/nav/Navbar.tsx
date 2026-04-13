@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, LogOut, LayoutGrid,
+  LayoutDashboard, LogOut,
   Compass, Plus, Home, User, Flame,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -42,12 +42,8 @@ export function Navbar() {
               <Compass className="h-4 w-4 shrink-0" aria-hidden />
               <span className="text-sm font-medium">Explore</span>
             </Link>
-            <Link href="/categories" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150', isActive('/categories') ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100')}>
-              <LayoutGrid className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              <span className="text-sm font-medium">Categories</span>
-            </Link>
             <Link href="/trending" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150', isActive('/trending') ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100')}>
-              <Flame className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <Flame className="h-4 w-4 shrink-0" aria-hidden />
               <span className="text-sm font-medium">Trending</span>
             </Link>
           </div>
