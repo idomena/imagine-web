@@ -10,15 +10,20 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: '#ffffff',
     theme_color:      '#0e8f82',
     icons: [
-      // Next.js serves /apple-icon at 512×512 — browsers scale for 192 too
       {
-        src:     '/apple-icon',
+        src:     '/icon-192.png',
+        sizes:   '192x192',
+        type:    'image/png',
+        purpose: 'any',
+      },
+      {
+        src:     '/icon-512.png',
         sizes:   '512x512',
         type:    'image/png',
         purpose: 'any',
       },
       {
-        src:     '/apple-icon',
+        src:     '/icon-512.png',
         sizes:   '512x512',
         type:    'image/png',
         purpose: 'maskable',

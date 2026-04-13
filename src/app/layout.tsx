@@ -38,8 +38,12 @@ export const metadata: Metadata = {
     description: DESC,
   },
   icons: {
-    icon:  [{ url: '/icon', type: 'image/png' }],
-    apple: [{ url: '/apple-icon', sizes: '180x180', type: 'image/png' }],
+    icon:  [
+      { url: '/favicon-32.png', sizes: '32x32',  type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   manifest: '/manifest.webmanifest',
 }
