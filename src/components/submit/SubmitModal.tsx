@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   X, CheckCircle, AlertCircle, Loader2, Upload, ImagePlus, LogIn, Camera, ShieldCheck,
 } from 'lucide-react'
@@ -64,7 +63,6 @@ function toSlug(name: string) {
 
 export function SubmitModal({ open, onClose }: Props) {
   const { user, accessToken } = useAuth()
-  const router = useRouter()
 
   // ── Logo state ─────────────────────────────────────────────────────────────
   const [logoFile,    setLogoFile]    = useState<File | null>(null)
@@ -88,7 +86,6 @@ export function SubmitModal({ open, onClose }: Props) {
   const [formStatus,    setFormStatus]    = useState<FormStatus>('idle')
   const [formError,     setFormError]     = useState('')
   const [duplicateApp,  setDuplicateApp]  = useState<{ id: string; name: string } | null>(null)
-  const [autoPublished, setAutoPublished] = useState(false)
   const [categories,   setCategories]   = useState<{ id: string; name: string }[]>([])
 
   const bypassDupeCheck = useRef(false)
@@ -124,7 +121,7 @@ export function SubmitModal({ open, onClose }: Props) {
     setName(''); setSlug(''); setSlugTouched(false)
     setTagline(''); setDescription(''); setLaunchUrl(''); setCategoryId('')
     setPrimaryColor(null)
-    setFormStatus('idle'); setFormError(''); setDuplicateApp(null); setAutoPublished(false)
+    setFormStatus('idle'); setFormError(''); setDuplicateApp(null)
     bypassDupeCheck.current = false
   }
 
@@ -278,10 +275,6 @@ export function SubmitModal({ open, onClose }: Props) {
         setFormStatus('rejected')
         return
       }
-      // For any other non-OK response (timeout, server error), don't block —
-      // the app stays in SUBMITTED for manual review.
-      setAutoPublished(submitJson.autoPublished === true)
-
       // Hold the scanning overlay for at least 4 seconds so the audit logs are readable
       const elapsed = Date.now() - scanStart
       if (elapsed < 4000) {
