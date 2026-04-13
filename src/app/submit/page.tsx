@@ -66,9 +66,10 @@ export default function SubmitPage() {
   const [launchUrl,    setLaunchUrl]    = useState('')
   const [categoryId,   setCategoryId]   = useState('')
   const [primaryColor, setPrimaryColor] = useState<string | null>(null)
-  const [formStatus,   setFormStatus]   = useState<FormStatus>('idle')
-  const [formError,    setFormError]    = useState('')
-  const [duplicateApp, setDuplicateApp] = useState<{ id: string; name: string } | null>(null)
+  const [formStatus,      setFormStatus]      = useState<FormStatus>('idle')
+  const [formError,       setFormError]       = useState('')
+  const [rejectedThreats, setRejectedThreats] = useState<string[]>([])
+  const [duplicateApp,    setDuplicateApp]    = useState<{ id: string; name: string } | null>(null)
   const [categories,   setCategories]   = useState<{ id: string; name: string }[]>([])
 
   const bypassDupeCheck = useRef(false)
@@ -207,11 +208,15 @@ export default function SubmitPage() {
       }
 
       if (subRes.status === 422) {
-        // Security scan rejected — show red shield overlay, do NOT throw
-        const detail = subJson.error?.details?.join(' ') ?? subJson.error?.message ?? 'Submission rejected by security scan.'
-        setFormError(detail)
+        // Security scan rejected — show red shield overlay with threat list
+        const threats = subJson.error?.details ?? []
+        setRejectedThreats(threats.length > 0 ? threats : [subJson.error?.message ?? 'Submission rejected by security scan.'])
         setFormStatus('rejected')
         return
+      }
+
+      if (!subRes.ok) {
+        throw new Error(subJson.error?.message ?? `Submission failed (${subRes.status})`)
       }
 
       // Guarantee overlay is visible for at least 4 seconds
@@ -337,14 +342,21 @@ export default function SubmitPage() {
                 </div>
               </div>
               <div className="text-center max-w-sm">
-                <p className="text-3xl font-bold text-white">Submission Rejected</p>
-                <p className="mt-2 text-base font-semibold text-red-400">Security Threat Detected</p>
-                {formError && (
-                  <p className="mt-4 text-sm font-light text-stone-400 leading-relaxed">{formError}</p>
+                <p className="text-3xl font-bold text-white">Security Audit Failed</p>
+                <p className="mt-2 text-base font-semibold text-red-400">Threats Detected</p>
+                {rejectedThreats.length > 0 && (
+                  <ul className="mt-4 flex flex-col gap-2 text-left">
+                    {rejectedThreats.map((threat, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-stone-300 leading-relaxed">
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                        {threat}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
               <button
-                onClick={() => { setFormStatus('idle'); setFormError('') }}
+                onClick={() => { setFormStatus('idle'); setFormError(''); setRejectedThreats([]) }}
                 className="rounded-full border border-stone-700 px-8 py-3 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-white"
               >
                 Dismiss

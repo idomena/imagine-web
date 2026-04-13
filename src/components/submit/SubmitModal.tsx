@@ -83,9 +83,10 @@ export function SubmitModal({ open, onClose }: Props) {
   const [launchUrl,    setLaunchUrl]    = useState('')
   const [categoryId,   setCategoryId]   = useState('')
   const [primaryColor, setPrimaryColor] = useState<string | null>(null)
-  const [formStatus,    setFormStatus]    = useState<FormStatus>('idle')
-  const [formError,     setFormError]     = useState('')
-  const [duplicateApp,  setDuplicateApp]  = useState<{ id: string; name: string } | null>(null)
+  const [formStatus,       setFormStatus]       = useState<FormStatus>('idle')
+  const [formError,        setFormError]        = useState('')
+  const [rejectedThreats,  setRejectedThreats]  = useState<string[]>([])
+  const [duplicateApp,     setDuplicateApp]     = useState<{ id: string; name: string } | null>(null)
   const [categories,   setCategories]   = useState<{ id: string; name: string }[]>([])
 
   const bypassDupeCheck = useRef(false)
@@ -121,7 +122,7 @@ export function SubmitModal({ open, onClose }: Props) {
     setName(''); setSlug(''); setSlugTouched(false)
     setTagline(''); setDescription(''); setLaunchUrl(''); setCategoryId('')
     setPrimaryColor(null)
-    setFormStatus('idle'); setFormError(''); setDuplicateApp(null)
+    setFormStatus('idle'); setFormError(''); setRejectedThreats([]); setDuplicateApp(null)
     bypassDupeCheck.current = false
   }
 
@@ -270,12 +271,17 @@ export function SubmitModal({ open, onClose }: Props) {
         error?: { message?: string; details?: string[] }
       }
       if (submitRes.status === 422) {
-        // Security scan rejected — surface reason in the overlay (red shield)
-        const detail = submitJson.error?.details?.join(' ') ?? submitJson.error?.message ?? 'Submission rejected by security scan.'
-        setFormError(detail)
+        // Security scan rejected — show red shield overlay with threat list
+        const threats = submitJson.error?.details ?? []
+        setRejectedThreats(threats.length > 0 ? threats : [submitJson.error?.message ?? 'Submission rejected by security scan.'])
         setFormStatus('rejected')
         return
       }
+
+      if (!submitRes.ok) {
+        throw new Error(submitJson.error?.message ?? `Submission failed (${submitRes.status})`)
+      }
+
       // Hold the scanning overlay for at least 4 seconds so the audit logs are readable
       const elapsed = Date.now() - scanStart
       if (elapsed < 4000) {
@@ -761,7 +767,7 @@ export function SubmitModal({ open, onClose }: Props) {
           </div>
 
         ) : (
-          /* ── Rejected — red shield + reason ── */
+          /* ── Rejected — red shield + threat list ── */
           <div className="flex flex-col items-center gap-8 animate-modal-in">
             <div className="relative flex items-center justify-center">
               <div
@@ -774,14 +780,21 @@ export function SubmitModal({ open, onClose }: Props) {
               </div>
             </div>
             <div className="text-center max-w-sm">
-              <p className="text-3xl font-bold text-white">Submission Rejected</p>
-              <p className="mt-2 text-base font-semibold text-red-400">Security Threat Detected</p>
-              {formError && (
-                <p className="mt-4 text-sm font-light text-stone-400 leading-relaxed">{formError}</p>
+              <p className="text-3xl font-bold text-white">Security Audit Failed</p>
+              <p className="mt-2 text-base font-semibold text-red-400">Threats Detected</p>
+              {rejectedThreats.length > 0 && (
+                <ul className="mt-4 flex flex-col gap-2 text-left">
+                  {rejectedThreats.map((threat, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-stone-300 leading-relaxed">
+                      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                      {threat}
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
             <button
-              onClick={() => { setFormStatus('idle'); setFormError('') }}
+              onClick={() => { setFormStatus('idle'); setFormError(''); setRejectedThreats([]) }}
               className="rounded-full border border-stone-700 px-8 py-3 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-white"
             >
               Dismiss
