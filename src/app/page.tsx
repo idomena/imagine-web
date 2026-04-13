@@ -61,46 +61,40 @@ export default async function HomePage() {
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <HeroOrWelcome hero={
-        <section className="relative bg-white sm:-mt-[88px]" style={{ minHeight: '100svh' }}>
+        <section className="relative sm:-mt-[88px] overflow-hidden bg-slate-50" style={{ minHeight: '100svh' }}>
 
-          {/* Subtle bottom fade into slate-50 page */}
+          {/* Radial glow — teal bloom behind the headline */}
           <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0 h-32"
-            style={{ background: 'linear-gradient(to top, #f8fafc 0%, transparent 100%)' }}
+            className="pointer-events-none absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 h-[520px] w-[820px] rounded-full opacity-60"
+            style={{ background: 'radial-gradient(ellipse at center, rgba(20,184,166,0.18) 0%, rgba(99,102,241,0.08) 45%, transparent 70%)' }}
             aria-hidden
           />
 
-          <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-24 sm:pb-36 pt-32 sm:pt-52">
+          <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-20 sm:pb-32 pt-28 sm:pt-48">
             <div className="flex w-full max-w-4xl flex-col items-center text-center">
 
-              {/* Badge */}
-              <div className="animate-fade-up mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-medium text-slate-600">
-                <Sparkles className="h-3 w-3 text-teal-600" aria-hidden />
+              {/* Eyebrow badge */}
+              <div className="animate-fade-up mb-7 inline-flex items-center gap-2 rounded-full border border-teal-200/70 bg-teal-50 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-teal-700">
+                <Sparkles className="h-3 w-3" aria-hidden />
                 AI App Marketplace
               </div>
 
               {/* Headline */}
-              <h1 className="animate-fade-up animation-delay-100 text-5xl sm:text-6xl lg:text-[5.25rem] font-bold leading-[1.06] tracking-tight text-slate-900">
-                Discover &amp; launch{' '}
-                <span className="text-teal-700">AI&nbsp;apps</span>{' '}
-                instantly
+              <h1 className="animate-fade-up animation-delay-100 text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-slate-900">
+                Discover &amp; Launch{' '}
+                <span className="text-teal-600">AI Apps</span>
               </h1>
 
-              {/* Subtitle */}
-              <p className="animate-fade-up animation-delay-200 mt-6 max-w-xl text-lg leading-relaxed text-slate-500">
-                Every app runs on its own URL. Paste a link to preview, security-scan, and publish to the marketplace — all in seconds.
-              </p>
-
-              {/* Input */}
-              <div className="animate-fade-up animation-delay-300 mt-10 w-full max-w-2xl">
+              {/* Input — wide, right below the headline */}
+              <div className="animate-fade-up animation-delay-200 mt-10 w-full max-w-2xl">
                 <HeroInput />
               </div>
 
               {/* Browse link */}
-              <p className="animate-fade-up animation-delay-400 mt-5 text-sm text-slate-400">
+              <p className="animate-fade-up animation-delay-300 mt-5 text-sm text-slate-400">
                 or{' '}
-                <Link href="/explore" className="font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900 transition-colors">
-                  browse without signing up
+                <Link href="/explore" className="font-medium text-slate-500 underline underline-offset-2 hover:text-slate-800 transition-colors">
+                  browse without an account
                 </Link>
               </p>
 

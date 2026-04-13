@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Shield, Loader2, Rocket, ExternalLink,
-  AlertCircle, Flame, RotateCcw, Sparkles,
+  AlertCircle, Flame, RotateCcw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -192,18 +192,12 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
     <section className="w-full bg-slate-50 pt-16 sm:pt-20 pb-4 px-4">
       <div className="mx-auto max-w-2xl">
 
-        {/* ── Header — no logo (navbar handles branding) ───────────────── */}
+        {/* ── Header ───────────────────────────────────────────────────── */}
         <div className="mb-10 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-            Discover &amp; Launch AI Apps
+            Discover &amp; Launch{' '}
+            <span className="text-teal-600">AI Apps</span>
           </h1>
-          <p className="mt-3 text-base text-slate-500">
-            Paste any URL to scan it and publish it to the marketplace.
-          </p>
-          <p className="mt-1.5 text-sm text-slate-400">
-            Welcome back,{' '}
-            <span className="font-medium text-slate-600">{displayName.split(' ')[0]}</span>
-          </p>
         </div>
 
         {/* ── URL input ─────────────────────────────────────────────────── */}
@@ -250,9 +244,9 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                 disabled={isScanning || !url.trim()}
                 className={cn(
                   'flex shrink-0 items-center gap-2 rounded-xl px-5 py-3.5',
-                  'bg-slate-900 text-sm font-semibold text-white shadow-sm',
-                  'transition-all duration-150 hover:bg-slate-800 active:scale-95',
-                  'disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100',
+                  'bg-gradient-to-r from-teal-500 to-indigo-500 text-sm font-semibold text-white shadow-sm',
+                  'transition-all duration-150 hover:shadow-md hover:-translate-y-px active:scale-95',
+                  'disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:translate-y-0',
                 )}
               >
                 {isScanning && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -338,8 +332,8 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                   disabled={isLaunching}
                   className={cn(
                     'w-full flex items-center justify-center gap-2 rounded-lg py-2.5',
-                    'bg-slate-900 text-sm font-semibold text-white',
-                    'transition-all duration-150 hover:bg-slate-800 active:scale-[0.99]',
+                    'bg-gradient-to-r from-teal-500 to-indigo-500 text-sm font-semibold text-white',
+                    'transition-all duration-150 hover:shadow-md active:scale-[0.99]',
                     'disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100',
                   )}
                 >
@@ -414,13 +408,14 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                             el.style.display = 'none'
                             const parent = el.parentElement
                             if (parent) {
-                              parent.innerHTML = `<span class="flex h-full w-full items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></span>`
+                              const initial = app.name.charAt(0).toUpperCase()
+                              parent.innerHTML = `<span style="background:linear-gradient(135deg,#14b8a6,#6366f1)" class="flex h-full w-full items-center justify-center text-white text-base font-bold">${initial}</span>`
                             }
                           }}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                          <Sparkles className="h-5 w-5 text-slate-400" />
+                        <div className="flex h-full w-full items-center justify-center" style={{ background: 'linear-gradient(135deg,#14b8a6,#6366f1)' }}>
+                          <span className="text-base font-bold text-white">{app.name.charAt(0).toUpperCase()}</span>
                         </div>
                       )}
                     </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Play, Globe, Sparkles } from 'lucide-react'
+import { Play, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { App } from '@/lib/api/types'
 
@@ -40,7 +40,7 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
 
       {/* ── Icon ───────────────────────────────────────────────────────── */}
       <div className="pointer-events-none shrink-0">
-        <AppIcon iconUrl={app.iconUrl} />
+        <AppIcon iconUrl={app.iconUrl} name={app.name} />
       </div>
 
       {/* ── Name / tagline / meta ──────────────────────────────────────── */}
@@ -104,7 +104,7 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
 // Uses plain <img> (not next/image) so any third-party domain works.
 // Falls back to a Sparkles icon if iconUrl is absent or fails to load.
 
-function AppIcon({ iconUrl }: { iconUrl: string | null }) {
+function AppIcon({ iconUrl, name }: { iconUrl: string | null; name: string }) {
   const [failed, setFailed] = useState(false)
 
   if (iconUrl && !failed) {
@@ -122,8 +122,8 @@ function AppIcon({ iconUrl }: { iconUrl: string | null }) {
   }
 
   return (
-    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100">
-      <Sparkles className="h-5 w-5 text-slate-400" />
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'linear-gradient(135deg,#14b8a6,#6366f1)' }}>
+      <span className="text-lg font-bold text-white">{name.charAt(0).toUpperCase()}</span>
     </div>
   )
 }

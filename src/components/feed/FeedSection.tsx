@@ -29,10 +29,10 @@ export function FeedSection({
       {/* Section header */}
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">
             {title}
             {count !== undefined && count > 0 && (
-              <span className="ml-2 text-base font-normal text-slate-400">{count}</span>
+              <span className="ml-2 font-normal">{count}</span>
             )}
           </h2>
           {subtitle && (
