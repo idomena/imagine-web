@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
-  CheckCircle, AlertCircle, Loader2, Upload, ImagePlus, LogIn, Camera, ArrowLeft, X, ShieldCheck,
+  CheckCircle, CheckCircle2, AlertCircle, ShieldAlert, Loader2, Upload, ImagePlus, LogIn, Camera, ArrowLeft, X, ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -241,7 +241,7 @@ export default function SubmitPage() {
     <>
       {/* ── Full-Screen Security Overlay ──────────────────────────────────── */}
       {showOverlay && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-stone-950">
+        <div className="fixed inset-0 z-[9999] overflow-hidden bg-stone-950">
           {/* Cyber grid */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -251,118 +251,128 @@ export default function SubmitPage() {
               backgroundSize: '40px 40px',
             }}
           />
-          {/* Radial glow */}
+          {/* Radial glow — transitions colour */}
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 transition-all duration-700"
             style={{
               background: formStatus === 'rejected'
-                ? 'radial-gradient(ellipse 60% 50% at 50% 50%,rgba(239,68,68,0.08) 0%,transparent 70%)'
-                : 'radial-gradient(ellipse 60% 50% at 50% 50%,rgba(20,184,166,0.10) 0%,transparent 70%)',
+                ? 'radial-gradient(ellipse 60% 50% at 50% 50%,rgba(239,68,68,0.12) 0%,transparent 70%)'
+                : 'radial-gradient(ellipse 60% 50% at 50% 50%,rgba(20,184,166,0.12) 0%,transparent 70%)',
             }}
           />
 
-          {formStatus === 'scanning' && (
-            <div className="relative flex flex-col items-center gap-10 animate-fade-in">
-              {/* Pulsing shield */}
-              <div className="relative flex items-center justify-center">
-                <div className="absolute h-52 w-52 rounded-full border border-teal-500/10 animate-ping" style={{ animationDuration: '2.5s' }} />
-                <div className="absolute h-40 w-40 rounded-full border border-teal-500/20 animate-ping" style={{ animationDuration: '1.8s', animationDelay: '0.4s' }} />
-                <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-2 border-teal-500/50 bg-teal-950 overflow-hidden animate-security-glow">
-                  <ShieldCheck className="h-14 w-14 text-teal-400" />
-                  <div className="animate-scan-sweep absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
-                </div>
+          {/* ── Scanning Panel ── */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-10 transition-opacity duration-500"
+            style={{ opacity: formStatus === 'scanning' ? 1 : 0, pointerEvents: formStatus === 'scanning' ? 'auto' : 'none' }}
+          >
+            <div className="relative flex items-center justify-center">
+              <div className="absolute h-52 w-52 rounded-full border border-teal-500/10 animate-ping" style={{ animationDuration: '2.5s' }} />
+              <div className="absolute h-40 w-40 rounded-full border border-teal-500/20 animate-ping" style={{ animationDuration: '1.8s', animationDelay: '0.4s' }} />
+              <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-2 border-teal-500/50 bg-teal-950 overflow-hidden animate-security-glow">
+                <ShieldCheck className="h-14 w-14 text-teal-400" />
+                <div className="animate-scan-sweep absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
               </div>
+            </div>
 
-              <div className="text-center">
-                <p className="text-3xl font-bold tracking-tight text-white">Shielding Your App...</p>
-                <p className="mt-2 text-lg font-semibold text-teal-400">Running Cyber Security Audit</p>
-              </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold tracking-tight text-white">Scanning Your App...</p>
+              <p className="mt-2 text-base font-semibold text-teal-400">Running Security Audit</p>
+            </div>
 
-              {/* Live terminal log */}
-              <div className="w-80 rounded-xl border border-stone-800 bg-stone-900/80 p-4 font-mono text-xs">
-                <div className="mb-2 flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
-                  <span className="ml-2 text-stone-500">sentinel — scan</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  {([
-                    ['$ Connecting to Sentinel Scanner...', '0ms'],
-                    ['$ Fetching page content...',          '600ms'],
-                    ['$ Analyzing inline scripts...',       '1200ms'],
-                    ['$ Verifying form safety...',          '1900ms'],
-                    ['$ Cross-referencing threat patterns...', '2700ms'],
-                    ['$ Generating security report...',     '3500ms'],
-                  ] as const).map(([text, delay]) => (
+            {/* Dynamic checklist */}
+            <div className="flex w-64 flex-col gap-3">
+              {([
+                ['Connection Secure',  '700ms'],
+                ['Code Analysis',      '1500ms'],
+                ['Threat Detection',   '2500ms'],
+                ['Final Verification', '3500ms'],
+              ] as const).map(([label, delay], i) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3 opacity-0 animate-fade-in"
+                  style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'forwards' }}
+                >
+                  <div className="relative h-5 w-5 shrink-0">
                     <div
-                      key={text}
-                      className="text-teal-400/70 opacity-0 animate-fade-in"
+                      className="absolute inset-0 flex items-center justify-center animate-fade-in"
+                      style={{ animationDelay: delay, animationDirection: 'reverse', animationFillMode: 'both' }}
+                    >
+                      <Loader2 className="h-4 w-4 animate-spin text-stone-500" />
+                    </div>
+                    <div
+                      className="absolute inset-0 flex items-center justify-center opacity-0 animate-fade-in"
                       style={{ animationDelay: delay, animationFillMode: 'forwards' }}
                     >
-                      {text}
+                      <CheckCircle2 className="h-4 w-4 text-teal-400" />
                     </div>
-                  ))}
+                  </div>
+                  <span className="text-sm font-medium text-stone-300">{label}</span>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Progress bar — fills over 4 s */}
-              <div className="w-80 h-0.5 overflow-hidden rounded-full bg-stone-800">
-                <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" style={{ animationDuration: '4s' }} />
+            {/* Progress bar */}
+            <div className="w-64 h-0.5 overflow-hidden rounded-full bg-stone-800">
+              <div className="h-full rounded-full bg-gradient-to-r from-teal-600 to-teal-300 animate-scan-progress" style={{ animationDuration: '4s' }} />
+            </div>
+          </div>
+
+          {/* ── Success Panel ── */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-8 transition-opacity duration-500"
+            style={{ opacity: formStatus === 'success' ? 1 : 0, pointerEvents: formStatus === 'success' ? 'auto' : 'none' }}
+          >
+            <div className="relative flex items-center justify-center">
+              <div className="absolute h-60 w-60 rounded-full bg-teal-500/5 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute h-44 w-44 rounded-full" style={{ background: 'rgba(20,184,166,0.08)', filter: 'blur(24px)' }} />
+              <div className="relative flex h-32 w-32 items-center justify-center rounded-full border-2 border-teal-400/50 bg-teal-950 animate-security-glow">
+                <CheckCircle2 className="h-16 w-16 text-teal-400" />
               </div>
             </div>
-          )}
+            <div className="text-center max-w-xs">
+              <p className="text-4xl font-bold text-white">You&apos;re Good to Go!</p>
+              <p className="mt-4 text-sm font-light text-stone-400 leading-relaxed">
+                Your app passed all 24 security checks.<br />Taking you to your dashboard...
+              </p>
+            </div>
+          </div>
 
-          {formStatus === 'success' && (
-            <div className="flex flex-col items-center gap-8 animate-modal-in">
-              <div className="relative flex items-center justify-center">
-                <div className="absolute h-52 w-52 rounded-full border border-teal-400/10 animate-ping" style={{ animationDuration: '1.4s' }} />
-                <div className="absolute h-40 w-40 rounded-full border border-teal-400/20 animate-ping" style={{ animationDuration: '1.8s', animationDelay: '0.3s' }} />
-                <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-teal-400/60 bg-teal-950 animate-security-glow">
-                  <CheckCircle className="h-14 w-14 text-teal-400" />
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-4xl font-bold text-white">Your app is safe</p>
-                <p className="text-4xl font-bold text-teal-400">and now LIVE!</p>
-                <p className="mt-4 text-sm text-stone-500">Redirecting to your dashboard...</p>
+          {/* ── Rejected Panel ── */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-7 px-6 transition-opacity duration-500"
+            style={{ opacity: formStatus === 'rejected' ? 1 : 0, pointerEvents: formStatus === 'rejected' ? 'auto' : 'none' }}
+          >
+            <div className="relative flex items-center justify-center">
+              <div className="absolute h-44 w-44 rounded-full border border-red-500/15 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-red-500/50 bg-red-950 animate-shield-pulse-red">
+                <ShieldAlert className="h-14 w-14 text-red-400" />
               </div>
             </div>
-          )}
-
-          {formStatus === 'rejected' && (
-            <div className="flex flex-col items-center gap-8 animate-modal-in">
-              <div className="relative flex items-center justify-center">
-                <div className="absolute h-44 w-44 rounded-full border border-red-500/15 animate-ping" style={{ animationDuration: '2s' }} />
-                <div
-                  className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-red-500/50 bg-red-950"
-                  style={{ boxShadow: '0 0 24px rgba(239,68,68,0.3)' }}
-                >
-                  <AlertCircle className="h-14 w-14 text-red-400" />
-                </div>
-              </div>
-              <div className="text-center max-w-sm">
-                <p className="text-3xl font-bold text-white">Security Audit Failed</p>
-                <p className="mt-2 text-base font-semibold text-red-400">Threats Detected</p>
-                {rejectedThreats.length > 0 && (
-                  <ul className="mt-4 flex flex-col gap-2 text-left">
-                    {rejectedThreats.map((threat, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-stone-300 leading-relaxed">
-                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                        {threat}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <button
-                onClick={() => { setFormStatus('idle'); setFormError(''); setRejectedThreats([]) }}
-                className="rounded-full border border-stone-700 px-8 py-3 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-white"
-              >
-                Dismiss
-              </button>
+            <div className="text-center max-w-sm">
+              <p className="text-3xl font-bold text-white">Security Review Required</p>
+              <p className="mt-3 text-sm font-light text-stone-400 leading-relaxed">
+                Our automated system flagged a few items that need your attention before we can publish.
+              </p>
             </div>
-          )}
+            {rejectedThreats.length > 0 && (
+              <div className="w-full max-w-sm overflow-hidden rounded-xl border border-red-900/50 bg-red-950/30 divide-y divide-red-900/30">
+                {rejectedThreats.map((threat, i) => (
+                  <div key={i} className="flex items-start gap-3 px-4 py-3">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                    <span className="text-sm text-stone-300 leading-relaxed">{threat}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={() => { setFormStatus('idle'); setFormError(''); setRejectedThreats([]) }}
+              className="rounded-full bg-stone-800 px-8 py-3 text-sm font-semibold text-white transition-all hover:bg-stone-700 active:scale-95"
+            >
+              ← Back to Edit
+            </button>
+          </div>
+
         </div>
       )}
 
