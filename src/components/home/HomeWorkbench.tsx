@@ -189,7 +189,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   const showPreview = phase === 'preview' || phase === 'launching' || phase === 'done'
 
   return (
-    <section className="w-full min-h-[100svh] bg-slate-50 pt-20 sm:pt-28 pb-20 px-4">
+    <section className="w-full bg-slate-50 pt-16 sm:pt-20 pb-4 px-4">
       <div className="mx-auto max-w-2xl">
 
         {/* ── Header — no logo (navbar handles branding) ───────────────── */}
@@ -215,7 +215,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               value={url}
               onChange={e => { setUrl(e.target.value); setErrorMsg('') }}
               onKeyDown={e => e.key === 'Enter' && phase === 'idle' && void handleScan()}
-              placeholder="https://your-ai-app.com"
+              placeholder="https://your-app.com"
               disabled={isScanning || isLaunching || phase === 'done'}
               aria-label="Paste URL to scan and launch"
               className={cn(

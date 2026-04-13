@@ -126,6 +126,7 @@ export default async function HomePage() {
         subtitle="Published and ready to launch"
         viewAllHref="/explore"
         variant="list"
+        className="pt-5"
         emptyState={apps.length === 0 && !error ? <EmptyFeed /> : undefined}
       >
         {apps.map((app) => (
