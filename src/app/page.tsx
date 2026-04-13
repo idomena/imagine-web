@@ -63,12 +63,15 @@ export default async function HomePage() {
       <HeroOrWelcome hero={
         <section className="relative sm:-mt-[88px] overflow-hidden bg-slate-50" style={{ minHeight: '100svh' }}>
 
-          {/* Radial glow — teal bloom behind the headline */}
-          <div
-            className="pointer-events-none absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 h-[520px] w-[820px] rounded-full opacity-60"
-            style={{ background: 'radial-gradient(ellipse at center, rgba(20,184,166,0.18) 0%, rgba(99,102,241,0.08) 45%, transparent 70%)' }}
-            aria-hidden
-          />
+          {/* Cloud blobs — animated, pointer-events-none */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+            {/* Blob 1 — teal, top-left */}
+            <div className="animate-blob-1 absolute -top-24 -left-24 h-[480px] w-[480px] rounded-full bg-teal-200/25 blur-3xl" />
+            {/* Blob 2 — indigo, center-right */}
+            <div className="animate-blob-2 absolute top-1/4 -right-32 h-[420px] w-[420px] rounded-full bg-indigo-200/20 blur-3xl" />
+            {/* Blob 3 — violet, bottom-center */}
+            <div className="animate-blob-3 absolute bottom-0 left-1/3 h-[360px] w-[360px] rounded-full bg-violet-100/20 blur-3xl" />
+          </div>
 
           <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-20 sm:pb-32 pt-28 sm:pt-48">
             <div className="flex w-full max-w-4xl flex-col items-center text-center">

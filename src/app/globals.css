@@ -152,6 +152,23 @@
   50%       { box-shadow: 0 0 24px rgba(239,68,68,0.6), 0 0 48px rgba(239,68,68,0.2); }
 }
 
+@keyframes blob-drift-1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33%       { transform: translate(28px, -38px) scale(1.04); }
+  66%       { transform: translate(-18px, 22px) scale(0.97); }
+}
+
+@keyframes blob-drift-2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33%       { transform: translate(-24px, 32px) scale(0.96); }
+  66%       { transform: translate(32px, -18px) scale(1.03); }
+}
+
+@keyframes blob-drift-3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50%       { transform: translate(16px, -28px) scale(1.05); }
+}
+
 @layer utilities {
   .animate-fade-up        { animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-fade-in        { animation: fade-in 0.5s ease both; }
@@ -166,6 +183,9 @@
   .animate-security-glow  { animation: security-glow 2.0s ease-in-out         infinite; }
   .animate-terminal-cursor { animation: terminal-cursor 1.0s step-end           infinite; }
   .animate-shield-pulse-red { animation: shield-pulse-red 2.0s ease-in-out      infinite; }
+  .animate-blob-1           { animation: blob-drift-1    18s  ease-in-out       infinite; }
+  .animate-blob-2           { animation: blob-drift-2    22s  ease-in-out 2s    infinite; }
+  .animate-blob-3           { animation: blob-drift-3    16s  ease-in-out 4s    infinite; }
   .animation-delay-100    { animation-delay: 100ms; }
   .animation-delay-200    { animation-delay: 200ms; }
   .animation-delay-300    { animation-delay: 300ms; }
