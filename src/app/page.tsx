@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { Zap, Shield, BarChart3, ArrowRight, AlertCircle } from 'lucide-react'
+import { Zap, Shield, BarChart3, Sparkles, AlertCircle } from 'lucide-react'
 import { AppCard }        from '@/components/apps/AppCard'
 import { FeedSection }    from '@/components/feed/FeedSection'
 import { HeroOrWelcome }  from '@/components/home/HeroOrWelcome'
+import { HeroInput }      from '@/components/home/HeroInput'
 import { apiClient }      from '@/lib/api/client'
 import type { ApiResponse, App, Category, Paginated } from '@/lib/api/types'
 import type { AppBadge } from '@/components/apps/AppCard'
@@ -146,44 +147,35 @@ export default async function HomePage() {
         <div className="relative z-10 flex min-h-[inherit] items-center justify-center px-5 sm:px-6 pb-20 sm:pb-40 pt-32 sm:pt-56">
           <div className="flex flex-col items-center text-center">
 
-            {/* Badge */}
-            <div className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-teal-200/70 bg-teal-50/80 px-3.5 py-1 text-xs font-semibold text-teal-700 backdrop-blur-sm">
-              <Zap className="h-3 w-3" aria-hidden />
-              AI App Marketplace
+            {/* Icon */}
+            <div className="animate-fade-up inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400 shadow-xl shadow-fuchsia-500/30 mb-2">
+              <Sparkles className="h-8 w-8 text-white" strokeWidth={1.75} aria-hidden />
             </div>
 
             {/* Headline */}
-            <h1 className="animate-fade-up animation-delay-100 mt-7 sm:mt-10 max-w-4xl text-4xl sm:text-6xl lg:text-[6rem] font-extrabold leading-[1.08] sm:leading-[1.05] tracking-tight text-stone-900">
-              Discover &amp; launch{' '}
-              <span className="gradient-text">AI&nbsp;apps</span>{' '}
-              instantly
+            <h1 className="animate-fade-up animation-delay-100 mt-6 sm:mt-8 max-w-3xl text-5xl sm:text-7xl lg:text-[7.5rem] font-extrabold leading-[1.06] tracking-tight bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-500 bg-clip-text text-transparent">
+              IMAGINE<br className="sm:hidden" />{' '}
+              <span className="text-stone-800">Marketplace</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="animate-fade-up animation-delay-200 mt-5 sm:mt-8 max-w-xs text-sm font-light leading-relaxed text-stone-400 sm:max-w-sm sm:text-base">
-              Every app runs on its own URL. One click to launch.
+            <p className="animate-fade-up animation-delay-200 mt-5 sm:mt-7 max-w-sm text-base font-normal leading-relaxed text-stone-500 sm:max-w-md sm:text-lg">
+              Paste a web link to auto-generate a stunning AI app{' '}
+              <span className="font-semibold text-stone-700">in seconds.</span>
             </p>
 
-            {/* CTAs */}
-            <div className="animate-fade-up animation-delay-300 mt-8 sm:mt-14 flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-5 w-full max-w-xs sm:max-w-none">
-              <Link
-                href="/explore"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-teal-700 px-8 sm:px-9 py-3.5 sm:py-4 text-sm font-semibold text-white shadow-lg shadow-teal-800/20 transition-all duration-200 hover:bg-teal-600 hover:-translate-y-0.5 hover:shadow-teal-700/30 active:scale-95"
-              >
-                Explore Apps
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link
-                href="/submit"
-                className="animate-subtle-pulse inline-flex items-center justify-center gap-2 rounded-full border border-stone-300/70 bg-white/70 px-8 sm:px-9 py-3.5 sm:py-4 text-sm font-semibold text-stone-700 backdrop-blur-sm transition-all duration-200 hover:border-stone-400 hover:bg-white hover:-translate-y-0.5 active:scale-95"
-              >
-                Submit Your App
-              </Link>
+            {/* URL input + gradient CTA */}
+            <div className="animate-fade-up animation-delay-300 w-full max-w-xl">
+              <HeroInput />
             </div>
 
-            {/* Social proof */}
-            <p className="animate-fade-up animation-delay-400 mt-8 sm:mt-12 text-xs font-light tracking-wide text-stone-400/80">
-              Free to browse · No sign-up required to explore
+            {/* Secondary link */}
+            <p className="animate-fade-up animation-delay-400 mt-6 text-xs font-light tracking-wide text-stone-400/80">
+              or{' '}
+              <Link href="/explore" className="underline underline-offset-2 hover:text-stone-600 transition-colors">
+                browse existing apps
+              </Link>
+              {' '}— no account needed
             </p>
 
           </div>

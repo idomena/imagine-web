@@ -14,7 +14,19 @@
       "Bash(npx tsc:*)",
       "Bash(./node_modules/.bin/tsc --noEmit)",
       "Bash(npm run:*)",
-      "Bash(node_modules/.bin/next build:*)"
+      "Bash(node_modules/.bin/next build:*)",
+      "Read(//c/backend/**)",
+      "Bash(find /c -maxdepth 3 -name \"apps.router.ts\")",
+      "Bash(find /c -maxdepth 3 -name \"*.router.ts\")",
+      "Bash(node C:/backend/node_modules/.bin/tsc --noEmit -p C:/backend/tsconfig.json)",
+      "Bash(C:/backend/node_modules/typescript/bin/tsc --noEmit -p C:/backend/tsconfig.json)",
+      "Bash(C:/frontend/node_modules/typescript/bin/tsc --noEmit -p C:/frontend/tsconfig.json)",
+      "Bash(ls C:/frontend/node_modules/.bin/tsc*)",
+      "Bash(git -C /c/backend add src/services/security-audit.service.ts src/modules/apps/apps.router.ts)",
+      "Bash(git -C /c/backend status)",
+      "Bash(git -C /c/frontend add src/components/submit/SubmitModal.tsx src/app/globals.css)",
+      "Bash(git -C /c/frontend status)",
+      "Bash(git:*)"
     ]
   }
 }
