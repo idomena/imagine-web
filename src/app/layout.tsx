@@ -13,9 +13,35 @@ const inter = Inter({
   display: 'swap',
 })
 
+const SITE_URL  = 'https://imagine-marketplace.vercel.app'
+const SITE_NAME = 'Imagine Marketplace'
+const TITLE     = 'Imagine — AI App Marketplace'
+const DESC      = "The world's first AI-powered app marketplace. Discover, launch, and manage apps instantly."
+
 export const metadata: Metadata = {
-  title:       'AppMarket — AI-Powered App Store',
-  description: 'Discover, launch, and manage AI-powered applications in one place.',
+  metadataBase: new URL(SITE_URL),
+  title:        TITLE,
+  description:  DESC,
+  applicationName: SITE_NAME,
+  keywords: ['AI apps', 'app marketplace', 'artificial intelligence', 'launch apps', 'discover apps'],
+  openGraph: {
+    type:        'website',
+    url:         SITE_URL,
+    siteName:    SITE_NAME,
+    title:       TITLE,
+    description: DESC,
+    locale:      'en_US',
+  },
+  twitter: {
+    card:        'summary_large_image',
+    title:       TITLE,
+    description: DESC,
+  },
+  icons: {
+    icon:  [{ url: '/icon', type: 'image/png' }],
+    apple: [{ url: '/apple-icon', sizes: '180x180', type: 'image/png' }],
+  },
+  manifest: '/manifest.webmanifest',
 }
 
 // viewport-fit=cover enables env(safe-area-inset-*) on iOS Safari
@@ -23,6 +49,7 @@ export const viewport: Viewport = {
   width:        'device-width',
   initialScale: 1,
   viewportFit:  'cover',
+  themeColor:   '#14b8a6',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
