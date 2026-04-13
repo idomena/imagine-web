@@ -282,18 +282,16 @@ export function SubmitModal({ open, onClose }: Props) {
       // the app stays in SUBMITTED for manual review.
       setAutoPublished(submitJson.autoPublished === true)
 
-      // Guarantee the scanning animation is visible for at least 3 seconds
+      // Hold the scanning overlay for at least 4 seconds so the audit logs are readable
       const elapsed = Date.now() - scanStart
-      if (elapsed < 3000) {
-        await new Promise<void>(resolve => setTimeout(resolve, 3000 - elapsed))
+      if (elapsed < 4000) {
+        await new Promise<void>(resolve => setTimeout(resolve, 4000 - elapsed))
       }
 
       setFormStatus('success')
-      // Auto-redirect to dashboard after 1.5 seconds
+      // Hard reload to dashboard after 1.5 seconds — forces a clean state
       setTimeout(() => {
-        router.push('/dashboard')
-        onClose()
-        setTimeout(reset, 300)
+        window.location.href = '/dashboard'
       }, 1500)
     } catch (err) {
       setFormStatus('error')
@@ -407,36 +405,6 @@ export function SubmitModal({ open, onClose }: Props) {
                 View app
               </a>
             </div>
-          </div>
-
-        ) : formStatus === 'success' ? (
-          /* ── Success ── */
-          <div className="flex flex-col items-center justify-center gap-5 px-8 py-20 text-center">
-            <div
-              className="flex h-20 w-20 items-center justify-center rounded-full"
-              style={{
-                background: primaryColor ? `${primaryColor}18` : '#f0fdf9',
-                border:     `2px solid ${primaryColor ?? '#14b8a6'}35`,
-              }}
-            >
-              <CheckCircle className="h-9 w-9" style={{ color: primaryColor ?? '#0d9488' }} />
-            </div>
-            <div>
-              <p className="text-xl font-semibold text-stone-900">
-                {autoPublished ? 'You\'re Live!' : 'App Submitted!'}
-              </p>
-              <p className="mt-1.5 text-sm font-light text-stone-400">
-                {autoPublished
-                  ? 'Your app passed security check and is now LIVE!'
-                  : 'Your app is under review. We\'ll let you know when it\'s published.'}
-              </p>
-            </div>
-            <button
-              onClick={handleClose}
-              className="inline-flex items-center gap-2 rounded-full bg-teal-700 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-700/20 hover:bg-teal-600 transition-all active:scale-95"
-            >
-              Done
-            </button>
           </div>
 
         ) : (
