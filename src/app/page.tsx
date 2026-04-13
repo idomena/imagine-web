@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { Zap, Shield, BarChart3, ArrowRight, AlertCircle } from 'lucide-react'
-import { AppCard }     from '@/components/apps/AppCard'
-import { FeedSection } from '@/components/feed/FeedSection'
-import { apiClient }   from '@/lib/api/client'
+import { AppCard }        from '@/components/apps/AppCard'
+import { FeedSection }    from '@/components/feed/FeedSection'
+import { HeroOrWelcome }  from '@/components/home/HeroOrWelcome'
+import { apiClient }      from '@/lib/api/client'
 import type { ApiResponse, App, Category, Paginated } from '@/lib/api/types'
 import type { AppBadge } from '@/components/apps/AppCard'
 
@@ -64,7 +65,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[#FDFDF9]">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section
+      <HeroOrWelcome hero={<section
         className="relative sm:-mt-[88px] overflow-hidden"
         style={{ minHeight: '100svh' }}
       >
@@ -187,7 +188,7 @@ export default async function HomePage() {
 
           </div>
         </div>
-      </section>
+      </section>} />
 
       {/* ── API error banner ──────────────────────────────────────────────── */}
       {error && (

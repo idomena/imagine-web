@@ -7,7 +7,7 @@ import Image from 'next/image'
 import {
   LayoutDashboard, Plus, MousePointerClick, CheckCircle,
   Loader2, AlertCircle, MoreVertical, Pencil, ExternalLink,
-  Trash2, Archive, ImagePlus, Type,
+  Trash2, Archive, ImagePlus, Type, LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -52,7 +52,7 @@ const STATUS: Record<string, { label: string; dot: string; badge: string }> = {
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
-  const { user, accessToken, isLoading: authLoading } = useAuth()
+  const { user, accessToken, isLoading: authLoading, logout } = useAuth()
   const router = useRouter()
 
   const [apps,       setApps]       = useState<AppWithStats[]>([])
@@ -76,6 +76,7 @@ export default function DashboardPage() {
         error?: { message?: string }
         message?: string
       }
+      if (res.status === 401) { logout(); router.replace('/'); return }
       if (!res.ok) throw new Error(json.error?.message ?? json.message ?? `Error ${res.status}`)
       setApps(json.data?.items ?? [])
     } catch (err) {
@@ -216,6 +217,15 @@ export default function DashboardPage() {
             <Plus className="h-4 w-4" aria-hidden />
             <span className="hidden xs:inline sm:inline">Add App</span>
           </Link>
+          <button
+            type="button"
+            onClick={() => { logout(); router.replace('/') }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+            title="Sign out"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-4 w-4" aria-hidden />
+          </button>
         </div>
 
         {/* Stats */}
