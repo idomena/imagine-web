@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Play, Globe } from 'lucide-react'
+import { Play, Globe, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { App } from '@/lib/api/types'
 
@@ -49,7 +48,7 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
 
       {/* ── Left: App icon ─────────────────────────────────────────────────── */}
       <div className="pointer-events-none shrink-0">
-        <AppIcon name={app.name} iconUrl={app.iconUrl} />
+        <AppIcon iconUrl={app.iconUrl} />
       </div>
 
       {/* ── Center: Name, tagline, meta ─────────────────────────────────────── */}
@@ -109,23 +108,18 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function AppIcon({ name, iconUrl }: { name: string; iconUrl: string | null }) {
-  const [imgError, setImgError] = useState(false)
+function AppIcon({ iconUrl }: { iconUrl: string | null }) {
+  const [failed, setFailed] = useState(false)
 
-  // Gentle pastel hue for the placeholder
-  const hue   = ((name.charCodeAt(0) ?? 65) * 137) % 360
-  const style = { background: `hsl(${hue}deg 40% 88%)` }
-
-  if (iconUrl && !imgError) {
+  if (iconUrl && !failed) {
     return (
-      <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-stone-200">
-        <Image
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={iconUrl}
           alt=""
-          fill
-          sizes="48px"
-          className="object-cover"
-          onError={() => setImgError(true)}
+          className="h-full w-full object-cover"
+          onError={() => setFailed(true)}
         />
       </div>
     )
@@ -133,11 +127,10 @@ function AppIcon({ name, iconUrl }: { name: string; iconUrl: string | null }) {
 
   return (
     <div
-      className="flex h-12 w-12 items-center justify-center rounded-xl border border-stone-200 text-lg font-bold text-stone-600 select-none"
-      style={style}
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-100"
       aria-hidden
     >
-      {name.trim()[0]?.toUpperCase() ?? '?'}
+      <Sparkles className="h-5 w-5 text-stone-400" />
     </div>
   )
 }
