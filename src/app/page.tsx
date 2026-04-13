@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Zap, Shield, BarChart3, Sparkles, AlertCircle } from 'lucide-react'
+import { Sparkles, AlertCircle } from 'lucide-react'
 import { AppCard }        from '@/components/apps/AppCard'
 import { FeedSection }    from '@/components/feed/FeedSection'
 import { HeroOrWelcome }  from '@/components/home/HeroOrWelcome'
@@ -50,12 +50,6 @@ function computeBadge(publishedAt: Date | string | null | undefined): AppBadge |
   return undefined
 }
 
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  'developer-tools': Zap,
-  'analytics':       BarChart3,
-  'security':        Shield,
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
@@ -63,124 +57,57 @@ export default async function HomePage() {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]))
 
   return (
-    <div className="min-h-screen bg-[#FDFDF9]">
+    <div className="min-h-screen bg-slate-50">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <HeroOrWelcome hero={<section
-        className="relative sm:-mt-[88px] overflow-hidden"
-        style={{ minHeight: '100svh' }}
-      >
+      <HeroOrWelcome hero={
+        <section className="relative bg-white sm:-mt-[88px]" style={{ minHeight: '100svh' }}>
 
-        {/* ── Sky gradient base ────────────────────────────────────────────── */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(175deg, #adc8e8 0%, #c4d9f0 18%, #d6e7f5 40%, #e8f2fb 65%, #f4f9fd 85%, #FDFDF9 100%)',
-          }}
-          aria-hidden
-        />
+          {/* Subtle bottom fade into slate-50 page */}
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-32"
+            style={{ background: 'linear-gradient(to top, #f8fafc 0%, transparent 100%)' }}
+            aria-hidden
+          />
 
-        {/* ── SVG watercolor cloud texture ─────────────────────────────────── */}
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          viewBox="0 0 1440 900"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden
-        >
-          <defs>
-            {/* Watercolor turbulence — large blobs */}
-            <filter id="wc-a" x="-60%" y="-60%" width="220%" height="220%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.011 0.008" numOctaves="4" seed="3" result="n"/>
-              <feDisplacementMap in="SourceGraphic" in2="n" scale="90" xChannelSelector="R" yChannelSelector="G" result="d"/>
-              <feGaussianBlur in="d" stdDeviation="11"/>
-            </filter>
-            {/* Watercolor turbulence — medium blobs */}
-            <filter id="wc-b" x="-55%" y="-55%" width="210%" height="210%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.014 0.010" numOctaves="4" seed="7" result="n"/>
-              <feDisplacementMap in="SourceGraphic" in2="n" scale="70" xChannelSelector="R" yChannelSelector="G" result="d"/>
-              <feGaussianBlur in="d" stdDeviation="13"/>
-            </filter>
-            {/* Watercolor turbulence — small accent blobs */}
-            <filter id="wc-c" x="-45%" y="-45%" width="190%" height="190%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.019 0.014" numOctaves="3" seed="11" result="n"/>
-              <feDisplacementMap in="SourceGraphic" in2="n" scale="48" xChannelSelector="R" yChannelSelector="G" result="d"/>
-              <feGaussianBlur in="d" stdDeviation="9"/>
-            </filter>
-            {/* Pure soft blur for blue depth accents */}
-            <filter id="blur-depth">
-              <feGaussianBlur stdDeviation="28"/>
-            </filter>
-          </defs>
+          <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-24 sm:pb-36 pt-32 sm:pt-52">
+            <div className="flex w-full max-w-4xl flex-col items-center text-center">
 
-          {/* ── Large upper-left cloud mass ── */}
-          <ellipse cx="155" cy="310" rx="420" ry="330" fill="white" fillOpacity="0.72" filter="url(#wc-a)"/>
-          <ellipse cx="50"  cy="155" rx="210" ry="170" fill="white" fillOpacity="0.58" filter="url(#wc-c)"/>
-          <ellipse cx="310" cy="180" rx="160" ry="120" fill="white" fillOpacity="0.42" filter="url(#wc-c)"/>
+              {/* Badge */}
+              <div className="animate-fade-up mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-medium text-slate-600">
+                <Sparkles className="h-3 w-3 text-teal-600" aria-hidden />
+                AI App Marketplace
+              </div>
 
-          {/* ── Large upper-right cloud mass ── */}
-          <ellipse cx="1295" cy="230" rx="390" ry="315" fill="white" fillOpacity="0.66" filter="url(#wc-b)"/>
-          <ellipse cx="1415" cy="410" rx="185" ry="155" fill="white" fillOpacity="0.48" filter="url(#wc-c)"/>
-          <ellipse cx="1100" cy="120" rx="170" ry="130" fill="white" fillOpacity="0.38" filter="url(#wc-c)"/>
+              {/* Headline */}
+              <h1 className="animate-fade-up animation-delay-100 text-5xl sm:text-6xl lg:text-[5.25rem] font-bold leading-[1.06] tracking-tight text-slate-900">
+                Discover &amp; launch{' '}
+                <span className="text-teal-700">AI&nbsp;apps</span>{' '}
+                instantly
+              </h1>
 
-          {/* ── Bottom center soft cloud ── */}
-          <ellipse cx="720" cy="840" rx="540" ry="175" fill="white" fillOpacity="0.40" filter="url(#wc-a)"/>
-          <ellipse cx="460" cy="780" rx="260" ry="140" fill="white" fillOpacity="0.30" filter="url(#wc-c)"/>
+              {/* Subtitle */}
+              <p className="animate-fade-up animation-delay-200 mt-6 max-w-xl text-lg leading-relaxed text-slate-500">
+                Every app runs on its own URL. Paste a link to preview, security-scan, and publish to the marketplace — all in seconds.
+              </p>
 
-          {/* ── Blue depth accents (give painterly richness) ── */}
-          <ellipse cx="100"  cy="680" rx="310" ry="195" fill="#7ab0d8" fillOpacity="0.28" filter="url(#blur-depth)"/>
-          <ellipse cx="1370" cy="590" rx="270" ry="175" fill="#7ab0d8" fillOpacity="0.22" filter="url(#blur-depth)"/>
-          <ellipse cx="600"  cy="600" rx="180" ry="110" fill="#94bedd" fillOpacity="0.18" filter="url(#blur-depth)"/>
+              {/* Input */}
+              <div className="animate-fade-up animation-delay-300 mt-10 w-full max-w-2xl">
+                <HeroInput />
+              </div>
 
-          {/* ── Mid accent cloud ── */}
-          <ellipse cx="870" cy="500" rx="225" ry="145" fill="white" fillOpacity="0.26" filter="url(#wc-c)"/>
-        </svg>
+              {/* Browse link */}
+              <p className="animate-fade-up animation-delay-400 mt-5 text-sm text-slate-400">
+                or{' '}
+                <Link href="/explore" className="font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900 transition-colors">
+                  browse without signing up
+                </Link>
+              </p>
 
-        {/* ── Bottom fade to page background ───────────────────────────────── */}
-        <div
-          className="pointer-events-none absolute bottom-0 left-0 right-0 h-48"
-          style={{ background: 'linear-gradient(to top, #FDFDF9 0%, transparent 100%)' }}
-          aria-hidden
-        />
-
-        {/* ── Content — centered single column ────────────────────────────── */}
-        <div className="relative z-10 flex min-h-[inherit] items-center justify-center px-5 sm:px-6 pb-20 sm:pb-40 pt-32 sm:pt-56">
-          <div className="flex flex-col items-center text-center">
-
-            {/* Icon */}
-            <div className="animate-fade-up inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400 shadow-xl shadow-fuchsia-500/30 mb-2">
-              <Sparkles className="h-8 w-8 text-white" strokeWidth={1.75} aria-hidden />
             </div>
-
-            {/* Headline */}
-            <h1 className="animate-fade-up animation-delay-100 mt-6 sm:mt-8 max-w-3xl text-5xl sm:text-7xl lg:text-[7.5rem] font-extrabold leading-[1.06] tracking-tight bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-500 bg-clip-text text-transparent">
-              IMAGINE<br className="sm:hidden" />{' '}
-              <span className="text-stone-800">Marketplace</span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="animate-fade-up animation-delay-200 mt-5 sm:mt-7 max-w-sm text-base font-normal leading-relaxed text-stone-500 sm:max-w-md sm:text-lg">
-              Paste a web link to auto-generate a stunning AI app{' '}
-              <span className="font-semibold text-stone-700">in seconds.</span>
-            </p>
-
-            {/* URL input + gradient CTA */}
-            <div className="animate-fade-up animation-delay-300 w-full max-w-xl">
-              <HeroInput />
-            </div>
-
-            {/* Secondary link */}
-            <p className="animate-fade-up animation-delay-400 mt-6 text-xs font-light tracking-wide text-stone-400/80">
-              or{' '}
-              <Link href="/explore" className="underline underline-offset-2 hover:text-stone-600 transition-colors">
-                browse existing apps
-              </Link>
-              {' '}— no account needed
-            </p>
-
           </div>
-        </div>
-      </section>} />
+        </section>
+      } />
 
       {/* ── API error banner ──────────────────────────────────────────────── */}
       {error && (

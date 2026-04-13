@@ -18,52 +18,46 @@ interface AppCardProps {
 export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
   const domain    = extractDomain(app.launchUrl)
   const hasLaunch = Boolean(app.launchUrl)
-
-  const appPath = `/apps/${app.slug ?? app.id}`
+  const appPath   = `/apps/${app.slug ?? app.id}`
 
   return (
     <article
       className={cn(
-        'animate-fade-in',
         'group relative flex items-center gap-4 overflow-hidden rounded-2xl',
-        'border border-stone-200/80 bg-white',
-        'px-4 py-3.5 sm:px-5',
+        'border border-slate-200/80 bg-white',
+        'px-4 py-4 sm:px-5',
         'shadow-sm transition-all duration-200',
-        'hover:-translate-y-px hover:border-teal-200 hover:shadow-md hover:shadow-stone-200/70',
+        'hover:border-slate-300 hover:shadow-md',
         className,
       )}
     >
-      {/* Subtle top-edge teal accent on hover */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-teal-400/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-        aria-hidden
-      />
-
-      {/* Invisible details overlay */}
+      {/* Full-card link */}
       <Link
         href={appPath}
-        className="absolute inset-0 z-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
+        className="absolute inset-0 z-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
         aria-label={`View details for ${app.name}`}
       />
 
-      {/* ── Left: App icon ─────────────────────────────────────────────────── */}
+      {/* ── Icon ───────────────────────────────────────────────────────── */}
       <div className="pointer-events-none shrink-0">
         <AppIcon iconUrl={app.iconUrl} />
       </div>
 
-      {/* ── Center: Name, tagline, meta ─────────────────────────────────────── */}
+      {/* ── Name / tagline / meta ──────────────────────────────────────── */}
       <div className="pointer-events-none min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-semibold text-stone-800">{app.name}</h3>
+          <h3 className="font-semibold text-slate-900">{app.name}</h3>
           {badge && <BadgePill badge={badge} />}
         </div>
 
-        <p className="mt-0.5 truncate text-sm text-stone-500">{app.tagline}</p>
+        <p className="mt-0.5 truncate text-sm text-slate-500">{app.tagline}</p>
 
         {(categoryName || domain) && (
-          <div className="mt-2 flex flex-wrap items-center gap-2.5 text-xs text-stone-400">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
             {categoryName && (
-              <span className="badge shrink-0">{categoryName}</span>
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-medium text-slate-600">
+                {categoryName}
+              </span>
             )}
             {domain && (
               <span className="flex items-center gap-1 truncate">
@@ -75,7 +69,7 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
         )}
       </div>
 
-      {/* ── Right: Play button ─────────────────────────────────────────────── */}
+      {/* ── Launch button ──────────────────────────────────────────────── */}
       <div className="pointer-events-auto relative z-10 shrink-0">
         {hasLaunch ? (
           <a
@@ -84,9 +78,9 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
             rel="noopener noreferrer"
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-full',
-              'bg-teal-700 text-white',
-              'transition-all duration-150 hover:bg-teal-600 hover:scale-110 active:scale-95',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40',
+              'bg-slate-900 text-white',
+              'transition-all duration-150 hover:bg-slate-700 hover:scale-110 active:scale-95',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30',
             )}
             aria-label={`Launch ${app.name}`}
           >
@@ -94,11 +88,11 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
           </a>
         ) : (
           <div
-            className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full bg-stone-100"
+            className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full bg-slate-100"
             title="No launch URL yet"
             aria-hidden
           >
-            <Play className="h-4 w-4 text-stone-400" />
+            <Play className="h-4 w-4 text-slate-300" />
           </div>
         )}
       </div>
@@ -106,14 +100,16 @@ export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
   )
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+// ── AppIcon ───────────────────────────────────────────────────────────────────
+// Uses plain <img> (not next/image) so any third-party domain works.
+// Falls back to a Sparkles icon if iconUrl is absent or fails to load.
 
 function AppIcon({ iconUrl }: { iconUrl: string | null }) {
   const [failed, setFailed] = useState(false)
 
   if (iconUrl && !failed) {
     return (
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
+      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={iconUrl}
@@ -126,14 +122,13 @@ function AppIcon({ iconUrl }: { iconUrl: string | null }) {
   }
 
   return (
-    <div
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-100"
-      aria-hidden
-    >
-      <Sparkles className="h-5 w-5 text-stone-400" />
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100">
+      <Sparkles className="h-5 w-5 text-slate-400" />
     </div>
   )
 }
+
+// ── BadgePill ─────────────────────────────────────────────────────────────────
 
 function BadgePill({ badge }: { badge: AppBadge }) {
   return badge === 'new' ? (
@@ -141,13 +136,13 @@ function BadgePill({ badge }: { badge: AppBadge }) {
       ✦ New
     </span>
   ) : (
-    <span className="inline-flex shrink-0 items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-600">
+    <span className="inline-flex shrink-0 items-center rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-orange-600">
       ↑ Trending
     </span>
   )
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function extractDomain(url: string | null | undefined): string | null {
   if (!url) return null

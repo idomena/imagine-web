@@ -24,24 +24,27 @@ export function FeedSection({
   children,
 }: FeedSectionProps) {
   return (
-    <section className={cn('mx-auto max-w-3xl px-4 sm:px-6 py-10', className)}>
+    <section className={cn('mx-auto max-w-4xl px-4 sm:px-6 py-10', className)}>
 
       {/* Section header */}
-      <div className="mb-5 flex items-end justify-between gap-4">
+      <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-stone-800">
+          <h2 className="text-xl font-semibold text-slate-900">
             {title}
             {count !== undefined && count > 0 && (
-              <span className="ml-2 text-sm font-normal text-stone-400">{count}</span>
+              <span className="ml-2 text-base font-normal text-slate-400">{count}</span>
             )}
           </h2>
           {subtitle && (
-            <p className="mt-0.5 text-sm text-stone-500">{subtitle}</p>
+            <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
           )}
         </div>
 
         {viewAllHref && (
-          <Link href={viewAllHref} className="btn-ghost shrink-0 py-1 text-sm">
+          <Link
+            href={viewAllHref}
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -52,7 +55,7 @@ export function FeedSection({
       {emptyState ? (
         emptyState
       ) : variant === 'list' ? (
-        <div className="flex flex-col gap-2.5">{children}</div>
+        <div className="flex flex-col gap-3">{children}</div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {children}

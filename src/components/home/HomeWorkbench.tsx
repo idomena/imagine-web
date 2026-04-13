@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   Shield, Loader2, Rocket, ExternalLink,
-  AlertCircle, Flame, RotateCcw,
+  AlertCircle, Flame, RotateCcw, Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -190,42 +189,26 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   const showPreview = phase === 'preview' || phase === 'launching' || phase === 'done'
 
   return (
-    <section className="w-full min-h-[100svh] pt-20 sm:pt-32 pb-20 px-4">
-      <div className="mx-auto max-w-lg">
+    <section className="w-full min-h-[100svh] bg-slate-50 pt-20 sm:pt-28 pb-20 px-4">
+      <div className="mx-auto max-w-2xl">
 
-        {/* ── Brand header ─────────────────────────────────────────────── */}
-        <div className="mb-12 flex flex-col items-center text-center">
-
-          {/* Single wordmark logo — this IS the brand, no title repetition */}
-          <Image
-            src="/imagine-logo.png"
-            alt="Imagine"
-            width={180}
-            height={54}
-            className="h-11 w-auto object-contain"
-            priority
-          />
-
-          {/* Page title — "Marketplace" pairs with the wordmark above */}
-          <h1 className="mt-5 text-3xl sm:text-4xl font-bold tracking-tight text-stone-900">
-            Marketplace
+        {/* ── Header — no logo (navbar handles branding) ───────────────── */}
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+            Discover &amp; Launch AI Apps
           </h1>
-
-          {/* Subtitle */}
-          <p className="mt-3 text-sm sm:text-base text-stone-500 leading-relaxed max-w-sm">
-            Transform any URL into a published AI app in seconds.
+          <p className="mt-3 text-base text-slate-500">
+            Paste any URL to scan it and publish it to the marketplace.
           </p>
-
-          {/* Greeting whisper */}
-          <p className="mt-2 text-xs text-stone-400">
+          <p className="mt-1.5 text-sm text-slate-400">
             Welcome back,{' '}
-            <span className="font-medium">{displayName.split(' ')[0]}</span>
+            <span className="font-medium text-slate-600">{displayName.split(' ')[0]}</span>
           </p>
         </div>
 
-        {/* ── URL input row ─────────────────────────────────────────────── */}
-        <div className="mb-3">
-          <div className="flex gap-2">
+        {/* ── URL input ─────────────────────────────────────────────────── */}
+        <div className="mb-4">
+          <div className="flex gap-2.5">
             <input
               ref={inputRef}
               type="url"
@@ -236,24 +219,23 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               disabled={isScanning || isLaunching || phase === 'done'}
               aria-label="Paste URL to scan and launch"
               className={cn(
-                'flex-1 rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-150',
-                'border-stone-200 bg-white placeholder:text-stone-400 text-stone-900',
-                'shadow-sm',
-                'focus:border-teal-400 focus:ring-2 focus:ring-teal-500/15',
-                'disabled:opacity-50 disabled:bg-stone-50',
+                'flex-1 rounded-xl border border-slate-200 bg-white',
+                'px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400',
+                'shadow-sm outline-none transition-all duration-150',
+                'focus:border-slate-400 focus:ring-2 focus:ring-slate-900/8',
+                'disabled:opacity-50 disabled:bg-slate-50',
               )}
             />
 
-            {/* Reset / Scan button */}
             {showPreview || phase === 'error' ? (
               <button
                 type="button"
                 onClick={reset}
                 disabled={isLaunching}
                 className={cn(
-                  'flex shrink-0 items-center gap-1.5 rounded-xl border border-stone-200 bg-white',
-                  'px-4 py-3 text-sm font-medium text-stone-600',
-                  'hover:bg-stone-50 hover:border-stone-300 transition-colors duration-150',
+                  'flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white',
+                  'px-4 py-3.5 text-sm font-medium text-slate-600 shadow-sm',
+                  'hover:bg-slate-50 transition-colors duration-150',
                   'disabled:opacity-50',
                 )}
                 aria-label="Reset"
@@ -267,21 +249,18 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                 onClick={() => void handleScan()}
                 disabled={isScanning || !url.trim()}
                 className={cn(
-                  'flex shrink-0 items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-150',
-                  'bg-teal-700 text-white',
-                  'hover:bg-teal-600 active:scale-95',
+                  'flex shrink-0 items-center gap-2 rounded-xl px-5 py-3.5',
+                  'bg-slate-900 text-sm font-semibold text-white shadow-sm',
+                  'transition-all duration-150 hover:bg-slate-800 active:scale-95',
                   'disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100',
                 )}
               >
-                {isScanning
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : null}
+                {isScanning && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isScanning ? 'Scanning…' : 'Scan & Launch'}
               </button>
             )}
           </div>
 
-          {/* Hint / error */}
           <div className="mt-2 min-h-[1.125rem]">
             {errorMsg ? (
               <p className="flex items-center gap-1.5 text-xs text-red-500">
@@ -289,30 +268,28 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                 {errorMsg}
               </p>
             ) : phase === 'idle' ? (
-              <p className="text-[11px] text-stone-400">
-                Paste any URL · Security scan runs automatically
+              <p className="text-[11px] text-slate-400">
+                Security scan runs automatically on every submission
               </p>
             ) : null}
           </div>
         </div>
 
-        {/* ── Scanning placeholder ─────────────────────────────────────── */}
+        {/* ── Scanning state ───────────────────────────────────────────── */}
         {isScanning && (
-          <div className="mt-4 flex items-center justify-center gap-2.5 rounded-xl border border-stone-100 bg-stone-50 py-10">
-            <Loader2 className="h-4 w-4 animate-spin text-stone-400" />
-            <span className="text-sm text-stone-500">Fetching site metadata…</span>
+          <div className="mt-3 flex items-center justify-center gap-2.5 rounded-xl border border-slate-100 bg-white py-10 shadow-sm">
+            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            <span className="text-sm text-slate-500">Fetching site metadata…</span>
           </div>
         )}
 
         {/* ── Preview card ─────────────────────────────────────────────── */}
         {showPreview && result && (
-          <div className="mt-4 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+          <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="p-5">
-
-              {/* App identity row */}
-              <div className="flex items-start gap-3.5">
-                {/* Logo / fallback */}
-                <div className="relative shrink-0 h-12 w-12 rounded-lg overflow-hidden border border-stone-100 bg-stone-50">
+              <div className="flex items-start gap-4">
+                {/* Icon */}
+                <div className="shrink-0 h-14 w-14 overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
                   {result.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -322,27 +299,27 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                       onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-stone-100">
-                      <ExternalLink className="h-5 w-5 text-stone-400" />
+                    <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                      <ExternalLink className="h-5 w-5 text-slate-400" />
                     </div>
                   )}
                 </div>
 
-                {/* Title + description */}
+                {/* Meta */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-stone-900 leading-snug line-clamp-1">
+                  <p className="text-sm font-semibold text-slate-900 leading-snug line-clamp-1">
                     {result.title ?? safeHostname(url)}
                   </p>
                   {result.description && (
-                    <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">
+                    <p className="mt-1 text-xs text-slate-500 line-clamp-2 leading-relaxed">
                       {result.description}
                     </p>
                   )}
-                  <p className="mt-1 text-[10px] text-stone-400 truncate">{url}</p>
+                  <p className="mt-1 text-[10px] text-slate-400 truncate">{url}</p>
                 </div>
               </div>
 
-              {/* Security shield */}
+              {/* Security badge */}
               <div className={cn(
                 'mt-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium',
                 SHIELD_STYLES[result.status],
@@ -352,16 +329,17 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             </div>
 
-            {/* Confirm & Launch footer */}
+            {/* Launch footer */}
             {phase !== 'done' && result.status !== 'Adult' && (
-              <div className="border-t border-stone-100 bg-stone-50/70 px-5 py-4">
+              <div className="border-t border-slate-100 bg-slate-50 px-5 py-4">
                 <button
                   type="button"
                   onClick={() => void handleLaunch()}
                   disabled={isLaunching}
                   className={cn(
-                    'w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-all duration-150',
-                    'bg-teal-700 text-white hover:bg-teal-600 active:scale-[0.99]',
+                    'w-full flex items-center justify-center gap-2 rounded-lg py-2.5',
+                    'bg-slate-900 text-sm font-semibold text-white',
+                    'transition-all duration-150 hover:bg-slate-800 active:scale-[0.99]',
                     'disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100',
                   )}
                 >
@@ -372,7 +350,6 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             )}
 
-            {/* Adult content hard-block */}
             {result.status === 'Adult' && (
               <div className="border-t border-red-100 bg-red-50 px-5 py-3">
                 <p className="text-center text-xs font-medium text-red-600">
@@ -381,7 +358,6 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
               </div>
             )}
 
-            {/* Done state */}
             {phase === 'done' && (
               <div className="border-t border-teal-100 bg-teal-50 px-5 py-3.5">
                 <div className="flex items-center justify-between">
@@ -393,10 +369,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
                     </div>
                     <p className="text-sm font-semibold text-teal-700">Launched!</p>
                   </div>
-                  <Link
-                    href="/dashboard"
-                    className="text-xs font-medium text-teal-600 hover:underline underline-offset-2"
-                  >
+                  <Link href="/dashboard" className="text-xs font-medium text-teal-600 hover:underline underline-offset-2">
                     View in Dashboard →
                   </Link>
                 </div>
@@ -405,64 +378,57 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
           </div>
         )}
 
-        {/* ── Trending row ─────────────────────────────────────────────── */}
+        {/* ── Trending ─────────────────────────────────────────────────── */}
         {trending.length > 0 && (
           <div className="mt-12">
             <div className="mb-4 flex items-center gap-1.5">
               <Flame className="h-3.5 w-3.5 text-orange-400" aria-hidden />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Trending
               </span>
             </div>
 
             <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
               <div className="flex gap-3 pb-2" style={{ width: 'max-content' }}>
-                {trending.map(app => {
-                  const hue = (app.name.charCodeAt(0) * 137) % 360
-                  return (
-                    <Link
-                      key={app.id}
-                      href={`/apps/${app.slug}`}
-                      title={app.name}
-                      className="group flex flex-col items-center gap-1.5"
-                    >
-                      <div className={cn(
-                        'h-12 w-12 overflow-hidden rounded-xl',
-                        'border border-stone-200 bg-stone-100',
-                        'transition-all duration-150 ease-out',
-                        'group-hover:scale-110 group-hover:border-teal-300 group-hover:shadow-md group-hover:shadow-teal-500/15',
-                      )}>
-                        {app.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={app.iconUrl}
-                            alt={app.name}
-                            className="h-full w-full object-cover"
-                            onError={e => {
-                              const el = e.currentTarget as HTMLImageElement
-                              el.style.display = 'none'
-                              const parent = el.parentElement
-                              if (parent) {
-                                parent.style.background = `hsl(${hue}deg 40% 88%)`
-                                parent.innerHTML = `<span class="flex h-full w-full items-center justify-center text-sm font-bold text-stone-600 select-none">${app.name[0]?.toUpperCase() ?? '?'}</span>`
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="flex h-full w-full items-center justify-center text-sm font-bold text-stone-600 select-none"
-                            style={{ background: `hsl(${hue}deg 40% 88%)` }}
-                          >
-                            {app.name[0]?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <span className="w-12 text-center text-[10px] leading-tight text-stone-400 group-hover:text-stone-600 transition-colors line-clamp-1">
-                        {app.name}
-                      </span>
-                    </Link>
-                  )
-                })}
+                {trending.map(app => (
+                  <Link
+                    key={app.id}
+                    href={`/apps/${app.slug}`}
+                    title={app.name}
+                    className="group flex flex-col items-center gap-2"
+                  >
+                    <div className={cn(
+                      'h-14 w-14 overflow-hidden rounded-2xl',
+                      'border border-slate-200 bg-slate-100',
+                      'transition-all duration-150 ease-out',
+                      'group-hover:scale-105 group-hover:border-slate-300 group-hover:shadow-md',
+                    )}>
+                      {app.iconUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={app.iconUrl}
+                          alt={app.name}
+                          className="h-full w-full object-cover"
+                          onError={e => {
+                            const el = e.currentTarget as HTMLImageElement
+                            el.style.display = 'none'
+                            const parent = el.parentElement
+                            if (parent) {
+                              parent.innerHTML = `<span class="flex h-full w-full items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></span>`
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                          <Sparkles className="h-5 w-5 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+                    <span className="w-14 text-center text-[10px] leading-tight text-slate-400 group-hover:text-slate-600 transition-colors line-clamp-2">
+                      {app.name}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
