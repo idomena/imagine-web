@@ -57,21 +57,25 @@ export default async function HomePage() {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]))
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="relative min-h-screen bg-slate-50">
+
+      {/* ── Full-page cloud blobs ──────────────────────────────────────────── */}
+      {/* absolute inset-0 grows with page height; overflow-hidden clips blobs  */}
+      {/* that extend past the edges without causing a horizontal scrollbar.    */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Blob 1 — teal,   top-left  (hero) */}
+        <div className="animate-blob-1 absolute -top-32 -left-32 h-[620px] w-[620px] rounded-full bg-teal-200/25 blur-3xl" />
+        {/* Blob 2 — indigo, upper-right (hero) */}
+        <div className="animate-blob-2 absolute top-[12%] -right-40 h-[540px] w-[540px] rounded-full bg-indigo-200/20 blur-3xl" />
+        {/* Blob 3 — violet, mid-page  (transition) */}
+        <div className="animate-blob-3 absolute top-[58%] left-[18%] h-[500px] w-[500px] rounded-full bg-violet-100/20 blur-3xl" />
+        {/* Blob 4 — teal,   lower-right (feed) */}
+        <div className="animate-blob-2 absolute top-[75%] -right-24 h-[460px] w-[460px] rounded-full bg-teal-100/15 blur-3xl" />
+      </div>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <HeroOrWelcome hero={
-        <section className="relative sm:-mt-[88px] overflow-hidden bg-slate-50" style={{ minHeight: '100svh' }}>
-
-          {/* Cloud blobs — animated, pointer-events-none */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-            {/* Blob 1 — teal, top-left */}
-            <div className="animate-blob-1 absolute -top-24 -left-24 h-[480px] w-[480px] rounded-full bg-teal-200/25 blur-3xl" />
-            {/* Blob 2 — indigo, center-right */}
-            <div className="animate-blob-2 absolute top-1/4 -right-32 h-[420px] w-[420px] rounded-full bg-indigo-200/20 blur-3xl" />
-            {/* Blob 3 — violet, bottom-center */}
-            <div className="animate-blob-3 absolute bottom-0 left-1/3 h-[360px] w-[360px] rounded-full bg-violet-100/20 blur-3xl" />
-          </div>
+        <section className="relative sm:-mt-[88px]" style={{ minHeight: '100svh' }}>
 
           <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-20 sm:pb-32 pt-28 sm:pt-48">
             <div className="flex w-full max-w-4xl flex-col items-center text-center">

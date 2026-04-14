@@ -189,14 +189,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   const showPreview = phase === 'preview' || phase === 'launching' || phase === 'done'
 
   return (
-    <section className="relative w-full overflow-hidden bg-slate-50 pt-16 sm:pt-20 pb-4 px-4">
-
-      {/* Cloud blobs */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="animate-blob-1 absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-teal-200/25 blur-3xl" />
-        <div className="animate-blob-2 absolute top-1/4 -right-32 h-[380px] w-[380px] rounded-full bg-indigo-200/20 blur-3xl" />
-        <div className="animate-blob-3 absolute bottom-8 left-1/3 h-[320px] w-[320px] rounded-full bg-violet-100/20 blur-3xl" />
-      </div>
+    <section className="relative w-full pt-16 sm:pt-20 pb-4 px-4">
 
       <div className="relative z-10 mx-auto max-w-2xl">
 
