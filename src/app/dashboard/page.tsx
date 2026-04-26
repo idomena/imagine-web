@@ -7,7 +7,7 @@ import Image from 'next/image'
 import {
   LayoutDashboard, Plus, MousePointerClick, CheckCircle,
   Loader2, AlertCircle, MoreVertical, Pencil, ExternalLink,
-  Trash2, Archive, ImagePlus, Type, LogOut,
+  Trash2, Archive, ImagePlus, Type, LogOut, Rocket,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -55,10 +55,11 @@ export default function DashboardPage() {
   const { user, accessToken, isLoading: authLoading, logout } = useAuth()
   const router = useRouter()
 
-  const [apps,       setApps]       = useState<AppWithStats[]>([])
-  const [loading,    setLoading]    = useState(true)
-  const [error,      setError]      = useState('')
-  const [editingApp, setEditingApp] = useState<AppWithStats | null>(null)
+  const [apps,         setApps]         = useState<AppWithStats[]>([])
+  const [loading,      setLoading]      = useState(true)
+  const [error,        setError]        = useState('')
+  const [editingApp,   setEditingApp]   = useState<AppWithStats | null>(null)
+  const [publishingId, setPublishingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/sign-in')
@@ -104,6 +105,34 @@ export default function DashboardPage() {
       setApps(prev => prev.filter(a => a.id !== appId))
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Delete failed.')
+    }
+  }
+
+  async function handlePublish(appId: string) {
+    if (!confirm('Run the security scan and publish this app?')) return
+    setPublishingId(appId)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/apps/${appId}/submit`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${accessToken ?? ''}`, 'Content-Type': 'application/json' },
+        body:    '{}',
+      })
+      const json = await res.json().catch(() => ({})) as {
+        success?: boolean
+        autoPublished?: boolean
+        error?: { message?: string; details?: string[] }
+      }
+      if (res.status === 422) {
+        const details = json.error?.details ?? []
+        alert(details.length > 0 ? details.join('\n') : (json.error?.message ?? 'Security scan rejected the app.'))
+        return
+      }
+      if (!res.ok) throw new Error(json.error?.message ?? `Error ${res.status}`)
+      setApps(prev => prev.map(a => a.id === appId ? { ...a, status: 'PUBLISHED' } : a))
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Publish failed.')
+    } finally {
+      setPublishingId(null)
     }
   }
 
@@ -270,9 +299,11 @@ export default function DashboardPage() {
               <AppCard
                 key={app.id}
                 app={app}
+                publishing={publishingId === app.id}
                 onEdit={() => setEditingApp(app)}
                 onDelete={() => handleDelete(app.id, app.name)}
                 onArchive={() => handleArchive(app.id)}
+                onPublish={() => handlePublish(app.id)}
                 onRename={(name) => handleRename(app.id, name)}
                 onIconUpload={(file) => handleIconUpload(app.id, file)}
               />
@@ -300,14 +331,16 @@ export default function DashboardPage() {
 
 interface AppCardProps {
   app:          AppWithStats
+  publishing:   boolean
   onEdit:       () => void
   onDelete:     () => void
   onArchive:    () => void
+  onPublish:    () => void
   onRename:     (name: string) => void
   onIconUpload: (file: File) => void
 }
 
-function AppCard({ app, onEdit, onDelete, onArchive, onRename, onIconUpload }: AppCardProps) {
+function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRename, onIconUpload }: AppCardProps) {
   const [menuOpen,    setMenuOpen]    = useState(false)
   const [renaming,    setRenaming]    = useState(false)
   const [renameValue, setRenameValue] = useState(app.name)
@@ -501,7 +534,25 @@ function AppCard({ app, onEdit, onDelete, onArchive, onRename, onIconUpload }: A
           <Pencil className="h-3 w-3" />
           Edit
         </button>
-        {app.launchUrl ? (
+
+        {app.status === 'DRAFT' ? (
+          <button
+            type="button"
+            onClick={onPublish}
+            disabled={publishing}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5',
+              'text-xs font-medium border transition-colors',
+              'bg-teal-600 border-teal-600 text-white hover:bg-teal-700 hover:border-teal-700',
+              'disabled:opacity-60 disabled:cursor-not-allowed',
+            )}
+          >
+            {publishing
+              ? <><Loader2 className="h-3 w-3 animate-spin" /> Publishing…</>
+              : <><Rocket className="h-3 w-3" /> Publish</>
+            }
+          </button>
+        ) : app.launchUrl ? (
           <a
             href={`${API_BASE}/api/v1/apps/${app.id}/visit`}
             target="_blank"
