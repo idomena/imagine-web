@@ -14,16 +14,16 @@ const inter = Inter({
 })
 
 const SITE_URL  = 'https://imagine-marketplace.vercel.app'
-const SITE_NAME = 'Imagine Marketplace'
-const TITLE     = 'Imagine — AI App Marketplace'
-const DESC      = "The world's first AI-powered app marketplace. Discover, launch, and manage apps instantly."
+const SITE_NAME = 'Imagine'
+const TITLE     = "Apple won't. Imagine will."
+const DESC      = 'The first marketplace for AI apps. No tax. No reviews. Just launch.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title:        TITLE,
   description:  DESC,
   applicationName: SITE_NAME,
-  keywords: ['AI apps', 'app marketplace', 'artificial intelligence', 'launch apps', 'discover apps'],
+  keywords: ['AI apps', 'app marketplace', 'artificial intelligence', 'launch apps', 'open marketplace'],
   openGraph: {
     type:        'website',
     url:         SITE_URL,
@@ -31,11 +31,19 @@ export const metadata: Metadata = {
     title:       TITLE,
     description: DESC,
     locale:      'en_US',
+    images: [{
+      url:    `${SITE_URL}/og-image-v2.png`,
+      width:  1200,
+      height: 630,
+      alt:    TITLE,
+    }],
   },
   twitter: {
     card:        'summary_large_image',
+    site:        '@ImagineAI',
     title:       TITLE,
     description: DESC,
+    images:      [`${SITE_URL}/og-image-v2.png`],
   },
   icons: {
     icon:  [
