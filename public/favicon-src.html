@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8"/>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:512px; height:512px; overflow:hidden; background:transparent; }
+
+    .icon {
+      width: 512px;
+      height: 512px;
+      background: #07080E;
+      border-radius: 112px; /* ~22% for 512px — scales to rounded square */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle radial glow */
+    .icon::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(14,143,130,0.35) 0%, transparent 65%);
+    }
+
+    .letter {
+      font-family: 'Dancing Script', cursive;
+      font-size: 320px;
+      font-weight: 700;
+      color: #0e8f82;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+      /* Subtle glow on the letter */
+      text-shadow: 0 0 60px rgba(14,143,130,0.6), 0 0 120px rgba(14,143,130,0.2);
+      /* Nudge up slightly — descenders in cursive fonts sit low */
+      margin-top: -20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">
+    <span class="letter">I</span>
+  </div>
+</body></html>
