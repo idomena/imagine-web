@@ -57,50 +57,61 @@ export default async function HomePage() {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]))
 
   return (
-    <div className="relative min-h-screen bg-slate-50">
-
-      {/* ── Full-page cloud blobs ──────────────────────────────────────────── */}
-      {/* absolute inset-0 grows with page height; overflow-hidden clips blobs  */}
-      {/* that extend past the edges without causing a horizontal scrollbar.    */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Blob 1 — teal,   top-left  (hero) */}
-        <div className="animate-blob-1 absolute -top-32 -left-32 h-[620px] w-[620px] rounded-full bg-teal-200/25 blur-3xl" />
-        {/* Blob 2 — indigo, upper-right (hero) */}
-        <div className="animate-blob-2 absolute top-[12%] -right-40 h-[540px] w-[540px] rounded-full bg-indigo-200/20 blur-3xl" />
-        {/* Blob 3 — violet, mid-page  (transition) */}
-        <div className="animate-blob-3 absolute top-[58%] left-[18%] h-[500px] w-[500px] rounded-full bg-violet-100/20 blur-3xl" />
-        {/* Blob 4 — teal,   lower-right (feed) */}
-        <div className="animate-blob-2 absolute top-[75%] -right-24 h-[460px] w-[460px] rounded-full bg-teal-100/15 blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-[#FDFCF8]">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <HeroOrWelcome hero={
         <section className="relative sm:-mt-[88px]" style={{ minHeight: '100svh' }}>
 
+          {/* Dot grid texture */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.35]"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #c4c4b8 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
+
+          {/* Soft radial glow behind headline */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 h-[500px] w-[800px] rounded-full opacity-30"
+            style={{ background: 'radial-gradient(ellipse at center, #818cf8 0%, transparent 65%)' }}
+          />
+
           <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-20 sm:pb-32 pt-28 sm:pt-48">
             <div className="flex w-full max-w-4xl flex-col items-center text-center">
 
               {/* Eyebrow badge */}
-              <div className="animate-fade-up mb-7 inline-flex items-center gap-2 rounded-full border border-teal-200/70 bg-teal-50 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-teal-700">
+              <div className="animate-fade-up mb-8 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-violet-700">
                 <Sparkles className="h-3 w-3" aria-hidden />
                 AI App Marketplace
               </div>
 
               {/* Headline */}
-              <h1 className="animate-fade-up animation-delay-100 text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-slate-900">
+              <h1 className="animate-fade-up animation-delay-100 text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-stone-900">
                 Discover &amp; Launch{' '}
-                <span className="text-teal-600">AI Apps</span>
+                <span className="bg-gradient-to-r from-teal-500 via-violet-500 to-orange-400 bg-clip-text text-transparent">
+                  AI Apps
+                </span>
               </h1>
 
-              {/* Input — wide, right below the headline */}
-              <div className="animate-fade-up animation-delay-200 mt-10 w-full max-w-2xl">
+              {/* Punchy subline */}
+              <p className="animate-fade-up animation-delay-200 mt-5 text-xl sm:text-2xl font-semibold text-stone-400">
+                Apple won&apos;t.{' '}
+                <span className="text-stone-700">Imagine will.</span>
+              </p>
+
+              {/* Input */}
+              <div className="animate-fade-up animation-delay-300 mt-10 w-full max-w-2xl">
                 <HeroInput />
               </div>
 
               {/* Browse link */}
-              <p className="animate-fade-up animation-delay-300 mt-5 text-sm text-slate-400">
+              <p className="animate-fade-up animation-delay-400 mt-5 text-sm text-stone-400">
                 or{' '}
-                <Link href="/explore" className="font-medium text-slate-500 underline underline-offset-2 hover:text-slate-800 transition-colors">
+                <Link href="/explore" className="font-medium text-stone-500 underline underline-offset-2 hover:text-stone-800 transition-colors">
                   browse without an account
                 </Link>
               </p>
@@ -149,13 +160,13 @@ export default async function HomePage() {
 function EmptyFeed() {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-stone-200 bg-white py-16 text-center shadow-sm">
-      <div className="text-3xl mb-3">✦</div>
-      <p className="font-medium text-stone-700">No published apps yet</p>
-      <p className="mt-1 text-sm text-stone-500 max-w-xs">
-        Apps appear here once approved and published.
+      <div className="text-4xl mb-4">🚀</div>
+      <p className="font-bold text-stone-800 text-lg">No apps yet</p>
+      <p className="mt-1.5 text-sm text-stone-500 max-w-xs">
+        Be the first to launch something great on Imagine.
       </p>
-      <Link href="/submit" className="btn-primary mt-5 text-sm">
-        Be the first to submit
+      <Link href="/submit" className="btn-primary mt-6 text-sm">
+        Submit your app
       </Link>
     </div>
   )

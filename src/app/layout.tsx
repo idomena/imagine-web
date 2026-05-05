@@ -13,7 +13,7 @@ const inter = Inter({
   display: 'swap',
 })
 
-const SITE_URL  = 'https://imagine-marketplace.vercel.app'
+const SITE_URL  = 'https://imaginehq.services'
 const SITE_NAME = 'Imagine'
 const TITLE     = "Apple won't. Imagine will."
 const DESC      = 'The first marketplace for AI apps. No tax. No reviews. Just launch.'

@@ -28,29 +28,51 @@ export function Navbar() {
       <header className="hidden sm:block sm:fixed sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:z-50 sm:w-[calc(100%-48px)] sm:max-w-[860px]">
         <nav className={cn(
           'flex items-center px-4 rounded-full',
-          'bg-white/75 backdrop-blur-md',
-          'border border-white/20',
-          'shadow-[0_4px_24px_rgba(0,0,0,0.10)]',
+          'bg-white/80 backdrop-blur-md',
+          'border border-stone-200/60',
+          'shadow-[0_4px_24px_rgba(0,0,0,0.08)]',
         )}>
 
           {/* LEFT — Logo + nav links */}
-          <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0 py-1.5">
+          <div className="flex flex-1 items-center gap-1 overflow-hidden min-w-0 py-1.5">
             <Link href="/" className="flex shrink-0 items-center hover:opacity-80 transition-opacity" aria-label="Imagine — home">
               <Image src="/imagine-logo.png" alt="Imagine" width={233} height={70} className="h-[70px] w-auto object-contain object-left" priority />
             </Link>
-            <Link href="/explore" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150', isActive('/explore') ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100')}>
+            <Link
+              href="/explore"
+              className={cn(
+                'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-150',
+                isActive('/explore')
+                  ? 'bg-stone-900 text-white'
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100',
+              )}
+            >
               <Compass className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="text-sm font-medium">Explore</span>
+              Explore
             </Link>
-            <Link href="/trending" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 transition-all duration-150', isActive('/trending') ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100')}>
+            <Link
+              href="/trending"
+              className={cn(
+                'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-150',
+                isActive('/trending')
+                  ? 'bg-stone-900 text-white'
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100',
+              )}
+            >
               <Flame className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="text-sm font-medium">Trending</span>
+              Trending
             </Link>
           </div>
 
           {/* CENTER — Submit FAB */}
           <div className="flex shrink-0 items-center justify-center px-5 pointer-events-none">
-            <Link href="/submit" aria-label="Submit an app" title="Submit App" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-teal-700 text-white hover:bg-teal-600 active:scale-95 transition-all duration-150 shadow-[0_2px_14px_rgba(20,184,166,0.40)]">
+            <Link
+              href="/submit"
+              aria-label="Submit an app"
+              title="Submit App"
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-white active:scale-95 transition-all duration-150 shadow-[0_2px_16px_rgba(99,102,241,0.45)]"
+              style={{ background: 'linear-gradient(135deg, #14b8a6, #6366f1)' }}
+            >
               <Plus className="h-5 w-5" strokeWidth={2.5} aria-hidden />
             </Link>
           </div>
@@ -61,7 +83,13 @@ export function Navbar() {
               <div className="h-8 w-28 animate-pulse rounded-full bg-stone-100" />
             ) : user ? (
               <>
-                <Link href="/dashboard" className={cn('flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors', isActive('/dashboard') ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900')}>
+                <Link
+                  href="/dashboard"
+                  className={cn(
+                    'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                    isActive('/dashboard') ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900',
+                  )}
+                >
                   <LayoutDashboard className="h-3.5 w-3.5" aria-hidden />
                   Dashboard
                 </Link>
@@ -75,14 +103,26 @@ export function Navbar() {
                   )}
                   <span className="max-w-[88px] truncate text-xs font-medium text-stone-700">{displayLabel}</span>
                 </div>
-                <button onClick={handleLogout} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors" title="Sign out">
+                <button
+                  onClick={handleLogout}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+                  title="Sign out"
+                >
                   <LogOut className="h-3.5 w-3.5" aria-hidden />
                 </button>
               </>
             ) : (
               <>
-                <Link href="/sign-in" className="shrink-0 px-4 py-1.5 text-sm font-medium text-stone-600 rounded-full hover:bg-stone-100 transition-colors">Log In</Link>
-                <Link href="/sign-up" className="shrink-0 px-4 py-1.5 text-sm font-semibold rounded-full bg-teal-700 text-white hover:bg-teal-600 transition-colors shadow-sm">Sign Up</Link>
+                <Link href="/sign-in" className="shrink-0 px-4 py-1.5 text-sm font-medium text-stone-600 rounded-full hover:bg-stone-100 transition-colors">
+                  Log In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="shrink-0 px-4 py-1.5 text-sm font-semibold rounded-full text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.02] active:scale-95"
+                  style={{ background: 'linear-gradient(135deg, #0D9488, #6366f1)' }}
+                >
+                  Sign Up
+                </Link>
               </>
             )}
           </div>
@@ -92,10 +132,9 @@ export function Navbar() {
 
       {/* ════════════════════════════════════════════════════════════════════
           MOBILE BOTTOM NAV  —  5 tabs, hidden on sm+
-          Home | Explore | [+ FAB] | Trending | Profile
       ════════════════════════════════════════════════════════════════════ */}
       <nav
-        className="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-stone-200/70 bg-white/85 backdrop-blur-xl"
+        className="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-stone-200/70 bg-white/90 backdrop-blur-xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center h-16 px-1">
@@ -108,18 +147,13 @@ export function Navbar() {
             <Compass className="h-[22px] w-[22px]" />
           </BottomTab>
 
-          {/* ── Center FAB ── */}
+          {/* Center FAB */}
           <div className="flex flex-1 items-center justify-center">
             <Link
               href="/submit"
               aria-label="Submit an app"
-              className={cn(
-                'flex h-12 w-12 items-center justify-center rounded-full',
-                'bg-teal-700 text-white',
-                'hover:bg-teal-600 active:scale-95 transition-all duration-150',
-                'shadow-[0_4px_20px_rgba(20,184,166,0.50)]',
-                '-mt-5',
-              )}
+              className="flex h-12 w-12 items-center justify-center rounded-full text-white active:scale-95 transition-all duration-150 shadow-[0_4px_20px_rgba(99,102,241,0.45)] -mt-5"
+              style={{ background: 'linear-gradient(135deg, #14b8a6, #6366f1)' }}
             >
               <Plus className="h-[22px] w-[22px]" strokeWidth={2.5} aria-hidden />
             </Link>

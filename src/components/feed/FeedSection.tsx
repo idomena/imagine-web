@@ -27,23 +27,27 @@ export function FeedSection({
     <section className={cn('mx-auto max-w-4xl px-4 sm:px-6 py-10', className)}>
 
       {/* Section header */}
-      <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-            {title}
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-sm font-bold text-stone-800">
+              {title}
+            </h2>
             {count !== undefined && count > 0 && (
-              <span className="ml-2 font-normal">{count}</span>
+              <span className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-500">
+                {count}
+              </span>
             )}
-          </h2>
+          </div>
           {subtitle && (
-            <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
+            <p className="mt-0.5 text-xs text-stone-400">{subtitle}</p>
           )}
         </div>
 
         {viewAllHref && (
           <Link
             href={viewAllHref}
-            className="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-600 shadow-sm transition-all duration-150 hover:border-stone-300 hover:shadow-md hover:-translate-y-px"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
