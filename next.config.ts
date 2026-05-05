@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: '*.up.railway.app' },
       { protocol: 'https', hostname: '*.railway.app' },
+      { protocol: 'https', hostname: 'imaginehq.services' },
+      { protocol: 'https', hostname: '*.imaginehq.services' },
     ],
   },
 }
