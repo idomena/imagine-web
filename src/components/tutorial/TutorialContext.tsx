@@ -51,12 +51,13 @@ export const STEPS: TutorialStep[] = [
 ]
 
 interface TutorialContextValue {
-  isOpen: boolean
-  step:   number
-  total:  number
-  next:   () => void
-  back:   () => void
-  skip:   () => void
+  isOpen:  boolean
+  step:    number
+  total:   number
+  next:    () => void
+  back:    () => void
+  skip:    () => void
+  replay:  () => void
 }
 
 const TutorialContext = createContext<TutorialContextValue | null>(null)
@@ -87,8 +88,14 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
     if (step > 0) setStep(s => s - 1)
   }
 
+  function replay() {
+    localStorage.removeItem(STORAGE_KEY)
+    setStep(0)
+    setIsOpen(true)
+  }
+
   return (
-    <TutorialContext.Provider value={{ isOpen, step, total, next, back, skip: finish }}>
+    <TutorialContext.Provider value={{ isOpen, step, total, next, back, skip: finish, replay }}>
       {children}
     </TutorialContext.Provider>
   )
