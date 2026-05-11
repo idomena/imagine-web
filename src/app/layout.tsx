@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Navbar } from '@/components/nav/Navbar'
 import { AuthProvider } from '@/context/AuthContext'
 import { SessionProvider } from '@/components/providers/SessionProvider'
+import { TutorialProvider } from '@/components/tutorial/TutorialContext'
+import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay'
 import './globals.css'
 
 const inter = Inter({
@@ -70,6 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SessionProvider>
           <AuthProvider>
+            <TutorialProvider>
+            <TutorialOverlay />
 
             {/*
               ── Mobile logo header ─────────────────────────────────────────
@@ -124,6 +128,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </footer>
 
+            </TutorialProvider>
           </AuthProvider>
         </SessionProvider>
       </body>

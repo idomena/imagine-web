@@ -40,6 +40,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/explore"
+              data-tutorial="nav-explore"
               className={cn(
                 'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-150',
                 isActive('/explore')
@@ -52,6 +53,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/trending"
+              data-tutorial="nav-trending"
               className={cn(
                 'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-150',
                 isActive('/trending')
@@ -70,6 +72,7 @@ export function Navbar() {
               href="/submit"
               aria-label="Submit an app"
               title="Submit App"
+              data-tutorial="nav-submit"
               className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-white active:scale-95 transition-all duration-150 shadow-[0_2px_16px_rgba(99,102,241,0.45)]"
               style={{ background: 'linear-gradient(135deg, #14b8a6, #6366f1)' }}
             >
@@ -118,6 +121,7 @@ export function Navbar() {
                 </Link>
                 <Link
                   href="/sign-up"
+                  data-tutorial="nav-signup"
                   className="shrink-0 px-4 py-1.5 text-sm font-semibold rounded-full text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.02] active:scale-95"
                   style={{ background: 'linear-gradient(135deg, #0D9488, #6366f1)' }}
                 >
@@ -143,7 +147,7 @@ export function Navbar() {
             <Home className="h-[22px] w-[22px]" />
           </BottomTab>
 
-          <BottomTab href="/explore" label="Explore" active={isActive('/explore')}>
+          <BottomTab href="/explore" label="Explore" active={isActive('/explore')} dataTutorial="nav-explore">
             <Compass className="h-[22px] w-[22px]" />
           </BottomTab>
 
@@ -152,6 +156,7 @@ export function Navbar() {
             <Link
               href="/submit"
               aria-label="Submit an app"
+              data-tutorial="nav-submit"
               className="flex h-12 w-12 items-center justify-center rounded-full text-white active:scale-95 transition-all duration-150 shadow-[0_4px_20px_rgba(99,102,241,0.45)] -mt-5"
               style={{ background: 'linear-gradient(135deg, #14b8a6, #6366f1)' }}
             >
@@ -159,7 +164,7 @@ export function Navbar() {
             </Link>
           </div>
 
-          <BottomTab href="/trending" label="Trending" active={isActive('/trending')}>
+          <BottomTab href="/trending" label="Trending" active={isActive('/trending')} dataTutorial="nav-trending">
             <Flame className="h-[22px] w-[22px]" />
           </BottomTab>
 
@@ -189,7 +194,7 @@ export function Navbar() {
               <span className="text-[10px] font-medium leading-none">Profile</span>
             </Link>
           ) : (
-            <BottomTab href="/sign-in" label="Sign In" active={isActive('/sign-in')}>
+            <BottomTab href="/sign-in" label="Sign In" active={isActive('/sign-in')} dataTutorial="nav-signup">
               <User className="h-[22px] w-[22px]" />
             </BottomTab>
           )}
@@ -202,15 +207,17 @@ export function Navbar() {
 
 // ── Reusable bottom tab ───────────────────────────────────────────────────────
 
-function BottomTab({ href, label, active, children }: {
-  href:     string
-  label:    string
-  active:   boolean
-  children: React.ReactNode
+function BottomTab({ href, label, active, children, dataTutorial }: {
+  href:          string
+  label:         string
+  active:        boolean
+  children:      React.ReactNode
+  dataTutorial?: string
 }) {
   return (
     <Link
       href={href}
+      data-tutorial={dataTutorial}
       className={cn(
         'flex flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
         active ? 'text-teal-700' : 'text-stone-400 hover:text-stone-700',

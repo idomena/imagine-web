@@ -15,7 +15,7 @@ export function HeroInput() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
+    <form onSubmit={handleSubmit} className="w-full" data-tutorial="hero-search">
       <div className="flex flex-col sm:flex-row gap-2.5">
 
         {/* URL input */}
