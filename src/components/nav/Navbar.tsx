@@ -5,15 +5,13 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, LogOut,
-  Compass, Plus, Home, User, Flame, BookOpen,
+  Compass, Plus, Home, User, Flame,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
-import { useTutorial } from '@/components/tutorial/TutorialContext'
 
 export function Navbar() {
   const { user, logout, isLoading } = useAuth()
-  const { replay } = useTutorial()
   const router   = useRouter()
   const pathname = usePathname()
 
@@ -66,14 +64,6 @@ export function Navbar() {
               <Flame className="h-4 w-4 shrink-0" aria-hidden />
               Trending
             </Link>
-            <button
-              onClick={replay}
-              title="Replay tutorial"
-              className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all duration-150"
-            >
-              <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
-              Tour
-            </button>
           </div>
 
           {/* CENTER — Submit FAB */}
@@ -152,16 +142,6 @@ export function Navbar() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center h-16 px-1">
-
-          <button
-            onClick={replay}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-stone-400 hover:text-stone-700 transition-colors"
-          >
-            <span className="flex items-center justify-center rounded-xl p-1">
-              <BookOpen className="h-[22px] w-[22px]" />
-            </span>
-            <span className="text-[10px] font-medium leading-none">Tour</span>
-          </button>
 
           <BottomTab href="/" label="Home" active={pathname === '/'}>
             <Home className="h-[22px] w-[22px]" />

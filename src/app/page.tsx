@@ -4,6 +4,7 @@ import { AppCard }        from '@/components/apps/AppCard'
 import { FeedSection }    from '@/components/feed/FeedSection'
 import { HeroOrWelcome }  from '@/components/home/HeroOrWelcome'
 import { HeroInput }      from '@/components/home/HeroInput'
+import { GuestBrowseLink } from '@/components/home/GuestBrowseLink'
 import { apiClient }      from '@/lib/api/client'
 import type { ApiResponse, App, Category, Paginated } from '@/lib/api/types'
 import type { AppBadge } from '@/components/apps/AppCard'
@@ -110,10 +111,7 @@ export default async function HomePage() {
 
               {/* Browse link */}
               <p className="animate-fade-up animation-delay-400 mt-5 text-sm text-stone-400">
-                or{' '}
-                <Link href="/explore" className="font-medium text-stone-500 underline underline-offset-2 hover:text-stone-800 transition-colors">
-                  browse without an account
-                </Link>
+                or <GuestBrowseLink />
               </p>
 
             </div>

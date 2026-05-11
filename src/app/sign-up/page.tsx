@@ -40,7 +40,8 @@ export default function SignUpPage() {
 
       const { user, accessToken, refreshToken } = json.data
       login({ user, accessToken, refreshToken })
-      router.push('/dashboard')
+      localStorage.setItem('imagine_tutorial_pending', '1')
+      router.push('/')
     } catch (err) {
       setStatus('error')
       setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Sign up failed.')

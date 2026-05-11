@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-const STORAGE_KEY = 'imagine_tutorial_done'
+const DONE_KEY    = 'imagine_tutorial_done'
+export const PENDING_KEY = 'imagine_tutorial_pending'
 
 export interface TutorialStep {
   target:   string | null   // data-tutorial attribute value; null = centered welcome bubble
@@ -68,13 +69,14 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
   const total = STEPS.length
 
   useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) {
+    if (localStorage.getItem(PENDING_KEY) && !localStorage.getItem(DONE_KEY)) {
+      localStorage.removeItem(PENDING_KEY)
       setIsOpen(true)
     }
   }, [])
 
   function finish() {
-    localStorage.setItem(STORAGE_KEY, '1')
+    localStorage.setItem(DONE_KEY, '1')
     setIsOpen(false)
     setStep(0)
   }
@@ -89,7 +91,7 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
   }
 
   function replay() {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(DONE_KEY)
     setStep(0)
     setIsOpen(true)
   }
