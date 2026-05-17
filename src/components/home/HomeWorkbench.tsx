@@ -112,7 +112,7 @@ export function HomeWorkbench({ displayName }: { displayName: string }) {
   async function handleScan() {
     const trimmed = url.trim()
     if (!trimmed) { setErrorMsg('Paste a URL first'); return }
-    if (!/^https?:\/\//i.test(trimmed)) { setErrorMsg('URL must start with https://'); return }
+    if (!/^https:\/\//i.test(trimmed)) { setErrorMsg('URL must start with https://'); return }
 
     setErrorMsg('')
     setPhase('scanning')

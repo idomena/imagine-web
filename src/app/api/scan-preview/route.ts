@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
   try { body = await req.json() as { url?: string } } catch { return NextResponse.json(PROTECTED) }
 
   const url = body.url?.trim()
-  if (!url || !/^https?:\/\//i.test(url)) {
+  if (!url || !/^https:\/\//i.test(url)) {
     return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
   }
 
