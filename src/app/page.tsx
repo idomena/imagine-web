@@ -2,6 +2,7 @@ import { AlertCircle } from 'lucide-react'
 import { GamifiedFeed } from '@/components/gamified/GamifiedFeed'
 import { GamificationProvider } from '@/components/gamified/GamificationContext'
 import { apiClient } from '@/lib/api/client'
+import { mockApps, mockCategories } from '@/lib/mock-data'
 import type { ApiResponse, App, Category, Paginated } from '@/lib/api/types'
 
 // ---------------------------------------------------------------------------
@@ -12,6 +13,7 @@ interface FeedData {
   apps: App[]
   categories: Category[]
   error?: string
+  usingMockData?: boolean
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -32,14 +34,19 @@ async function getFeedData(): Promise<FeedData> {
     ])
     return { apps: shuffle(appsRes.data.items), categories: catsRes.data }
   } catch {
-    return { apps: [], categories: [], error: 'Could not reach the API.' }
+    // Fallback to mock data for development preview
+    return { 
+      apps: shuffle(mockApps), 
+      categories: mockCategories, 
+      usingMockData: true 
+    }
   }
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
-  const { apps, categories, error } = await getFeedData()
+  const { apps, categories, error, usingMockData } = await getFeedData()
 
   return (
     <GamificationProvider>
@@ -50,6 +57,16 @@ export default async function HomePage() {
             <div className="flex items-center gap-3 rounded-2xl border-2 border-red-200 bg-red-50 p-4 text-sm text-red-600">
               <AlertCircle className="h-5 w-5 shrink-0" />
               {error}
+            </div>
+          </div>
+        )}
+
+        {/* Mock data notice */}
+        {usingMockData && (
+          <div className="mx-auto max-w-md px-4 pt-4">
+            <div className="flex items-center gap-3 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              Preview mode - showing sample apps
             </div>
           </div>
         )}
