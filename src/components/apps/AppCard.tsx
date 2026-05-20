@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Globe, ArrowUpRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowUpRight, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { App } from '@/lib/api/types'
 
@@ -13,115 +14,146 @@ interface AppCardProps {
   badge?:        AppBadge
   categoryName?: string
   className?:    string
+  index?:        number
 }
 
-export function AppCard({ app, badge, categoryName, className }: AppCardProps) {
-  const domain    = extractDomain(app.launchUrl)
+function stableXP(id: string): number {
+  let h = 5381
+  for (let i = 0; i < id.length; i++) h = ((h << 5) + h) ^ id.charCodeAt(i)
+  return (Math.abs(h) % 90) + 10
+}
+
+export function AppCard({ app, badge, categoryName, className, index = 0 }: AppCardProps) {
+  const [imgFailed, setImgFailed] = useState(false)
+  const appPath  = `/apps/${app.slug ?? app.id}`
+  const accent   = app.primaryColor ?? '#0EA5E9'
   const hasLaunch = Boolean(app.launchUrl)
-  const appPath   = `/apps/${app.slug ?? app.id}`
-  const accent    = app.primaryColor ?? '#0D9488'
+  const xp       = stableXP(app.id)
 
   return (
-    <article
+    <motion.article
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{
+        duration: 0.45,
+        delay: (index % 8) * 0.06,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      whileHover={{ y: -6, transition: { type: 'spring', stiffness: 380, damping: 22 } }}
+      whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
       className={cn(
-        'group relative flex items-center gap-4 overflow-hidden rounded-2xl',
-        'border border-stone-200/80 bg-white',
-        'px-4 py-4 sm:px-5',
-        'shadow-sm transition-all duration-200',
-        'hover:border-stone-300 hover:shadow-lg hover:shadow-stone-200/70 hover:-translate-y-0.5',
+        'group relative flex flex-col overflow-hidden rounded-3xl bg-white',
+        'border border-stone-100/80',
+        'shadow-md shadow-stone-200/50',
+        'transition-shadow duration-250 hover:shadow-xl hover:shadow-violet-100/60',
         className,
       )}
     >
-      {/* Left color accent strip */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-60 transition-opacity duration-200 group-hover:opacity-100"
-        style={{ background: accent }}
+      {/* Gradient accent band at top */}
+      <div
+        className="h-1.5 w-full shrink-0"
+        style={{ background: `linear-gradient(90deg, ${accent}, ${accent}66)` }}
       />
 
-      {/* Full-card link */}
-      <Link
-        href={appPath}
-        className="absolute inset-0 z-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
-        aria-label={`View details for ${app.name}`}
-      />
+      <div className="flex flex-col flex-1 p-4 sm:p-5 gap-3">
 
-      {/* ── Icon ── */}
-      <div className="pointer-events-none shrink-0">
-        <AppIcon iconUrl={app.iconUrl} name={app.name} accent={accent} />
-      </div>
-
-      {/* ── Name / tagline / meta ── */}
-      <div className="pointer-events-none min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-bold text-stone-900">{app.name}</h3>
+        {/* Icon row */}
+        <div className="flex items-start justify-between gap-2">
+          <AppIcon
+            iconUrl={app.iconUrl}
+            name={app.name}
+            accent={accent}
+            failed={imgFailed}
+            onFail={() => setImgFailed(true)}
+          />
           {badge && <BadgePill badge={badge} />}
         </div>
 
-        <p className="mt-0.5 truncate text-sm text-stone-500">{app.tagline}</p>
+        {/* Name + tagline */}
+        <div>
+          <h3 className="font-black text-[15px] leading-snug text-stone-900 line-clamp-1">
+            {app.name}
+          </h3>
+          <p className="mt-1 text-[13px] text-stone-500 line-clamp-2 leading-relaxed">
+            {app.tagline}
+          </p>
+        </div>
 
-        {(categoryName || domain) && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {categoryName && (
-              <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-[11px] font-medium text-stone-600">
-                {categoryName}
-              </span>
-            )}
-            {domain && (
-              <span className="flex items-center gap-1 truncate text-xs text-stone-400">
-                <Globe className="h-3 w-3 shrink-0" aria-hidden />
-                <span className="truncate">{domain}</span>
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Launch button ── */}
-      <div className="pointer-events-auto relative z-10 shrink-0">
-        {hasLaunch ? (
-          <a
-            href={app.launchUrl!}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition-all duration-150 hover:scale-105 hover:bg-stone-700 active:scale-95"
-            aria-label={`Launch ${app.name}`}
-          >
-            Open <ArrowUpRight className="h-3 w-3" />
-          </a>
-        ) : (
-          <span
-            className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-400 cursor-not-allowed"
-            title="No launch URL yet"
-          >
-            Soon
+        {/* Category + XP row */}
+        <div className="flex items-center justify-between mt-auto pt-1">
+          {categoryName ? (
+            <span className="rounded-full bg-stone-50 border border-stone-100 px-2.5 py-0.5 text-[11px] font-medium text-stone-500">
+              {categoryName}
+            </span>
+          ) : <span />}
+          <span className="xp-badge">
+            <Zap className="h-3 w-3 fill-amber-400 text-amber-400" aria-hidden />
+            +{xp} XP
           </span>
-        )}
+        </div>
+
+        {/* CTA button */}
+        <div className="relative z-10 mt-1">
+          {hasLaunch ? (
+            <a
+              href={app.launchUrl!}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Launch ${app.name}`}
+              className="flex w-full items-center justify-center gap-1.5 rounded-2xl py-2.5 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:opacity-90 hover:shadow-md active:scale-95"
+              style={{
+                background: `linear-gradient(135deg, ${accent}ee, ${accent})`,
+                boxShadow: `0 4px 16px ${accent}44`,
+              }}
+            >
+              Launch App <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
+          ) : (
+            <div className="flex w-full items-center justify-center rounded-2xl bg-stone-50 border border-stone-100 py-2.5 text-[13px] font-medium text-stone-400 cursor-default">
+              Coming Soon
+            </div>
+          )}
+        </div>
+
       </div>
-    </article>
+
+      {/* Full-card link layer (under the CTA button) */}
+      <Link
+        href={appPath}
+        className="absolute inset-0 z-0 rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/40"
+        aria-label={`View details for ${app.name}`}
+      />
+    </motion.article>
   )
 }
 
 // ── AppIcon ───────────────────────────────────────────────────────────────────
 
-function AppIcon({ iconUrl, name, accent }: { iconUrl: string | null; name: string; accent: string }) {
-  const [failed, setFailed] = useState(false)
-
+function AppIcon({
+  iconUrl, name, accent, failed, onFail,
+}: {
+  iconUrl: string | null
+  name:    string
+  accent:  string
+  failed:  boolean
+  onFail:  () => void
+}) {
   if (iconUrl && !failed) {
     return (
-      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-stone-200/80 bg-stone-50 shadow-sm">
+      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-stone-100 shadow-sm">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={iconUrl} alt="" className="h-full w-full object-cover" onError={() => setFailed(true)} />
+        <img src={iconUrl} alt="" className="h-full w-full object-cover" onError={onFail} />
       </div>
     )
   }
-
   return (
     <div
-      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-sm"
+      className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-sm text-2xl font-black text-white select-none"
       style={{ background: `linear-gradient(135deg, ${accent}cc, ${accent})` }}
     >
-      <span className="text-xl font-bold text-white">{name.charAt(0).toUpperCase()}</span>
+      {name.charAt(0).toUpperCase()}
     </div>
   )
 }
@@ -129,20 +161,22 @@ function AppIcon({ iconUrl, name, accent }: { iconUrl: string | null; name: stri
 // ── BadgePill ─────────────────────────────────────────────────────────────────
 
 function BadgePill({ badge }: { badge: AppBadge }) {
-  return badge === 'new' ? (
-    <span className="inline-flex shrink-0 items-center rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-700">
+  if (badge === 'new') return (
+    <motion.span
+      animate={{ scale: [1, 1.08, 1] }}
+      transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+      className="inline-flex shrink-0 items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-700"
+    >
       ✦ New
-    </span>
-  ) : (
-    <span className="inline-flex shrink-0 items-center rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-orange-600">
-      🔥 Hot
-    </span>
+    </motion.span>
   )
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function extractDomain(url: string | null | undefined): string | null {
-  if (!url) return null
-  try { return new URL(url).hostname } catch { return null }
+  return (
+    <motion.span
+      animate={{ scale: [1, 1.08, 1] }}
+      transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+      className="inline-flex shrink-0 items-center rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-600"
+    >
+      🔥 Hot
+    </motion.span>
+  )
 }

@@ -4,18 +4,16 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
-  LayoutDashboard, Plus, MousePointerClick, CheckCircle,
+  Plus, MousePointerClick, CheckCircle,
   Loader2, AlertCircle, MoreVertical, Pencil, ExternalLink,
   Trash2, Archive, ImagePlus, Type, LogOut, Rocket,
+  Zap, TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { EditAppModal, type AppData } from '@/components/submit/EditAppModal'
-
-// ---------------------------------------------------------------------------
-// Dashboard — creator's app grid with card-based UI
-// ---------------------------------------------------------------------------
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
@@ -36,15 +34,21 @@ interface AppWithStats {
   securityAuditReport?: { safetyScore: number; decision: string } | null
 }
 
-// Status → { label, dot color, badge bg/text }
 const STATUS: Record<string, { label: string; dot: string; badge: string }> = {
-  DRAFT:     { label: 'Draft',     dot: 'bg-amber-400',   badge: 'bg-amber-50 text-amber-700 border-amber-200'   },
-  SUBMITTED: { label: 'Submitted', dot: 'bg-sky-400',     badge: 'bg-sky-50 text-sky-700 border-sky-200'         },
-  IN_REVIEW: { label: 'In Review', dot: 'bg-blue-400',    badge: 'bg-blue-50 text-blue-700 border-blue-200'      },
-  APPROVED:  { label: 'Approved',  dot: 'bg-teal-400',    badge: 'bg-teal-50 text-teal-700 border-teal-200'      },
-  PUBLISHED: { label: 'Published', dot: 'bg-teal-500',    badge: 'bg-teal-50 text-teal-700 border-teal-200'      },
-  REJECTED:  { label: 'Rejected',  dot: 'bg-red-400',     badge: 'bg-red-50 text-red-600 border-red-200'         },
-  ARCHIVED:  { label: 'Archived',  dot: 'bg-red-300',     badge: 'bg-red-50 text-red-500 border-red-200'         },
+  DRAFT:     { label: 'Draft',     dot: 'bg-amber-400',  badge: 'bg-amber-50 text-amber-700 border-amber-200'  },
+  SUBMITTED: { label: 'Submitted', dot: 'bg-sky-400',    badge: 'bg-sky-50 text-sky-700 border-sky-200'        },
+  IN_REVIEW: { label: 'In Review', dot: 'bg-blue-400',   badge: 'bg-blue-50 text-blue-700 border-blue-200'     },
+  APPROVED:  { label: 'Approved',  dot: 'bg-teal-400',   badge: 'bg-teal-50 text-teal-700 border-teal-200'     },
+  PUBLISHED: { label: 'Live',      dot: 'bg-emerald-500',badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  REJECTED:  { label: 'Rejected',  dot: 'bg-red-400',    badge: 'bg-red-50 text-red-600 border-red-200'        },
+  ARCHIVED:  { label: 'Archived',  dot: 'bg-slate-300',  badge: 'bg-slate-50 text-slate-500 border-slate-200'  },
+}
+
+function getGreeting(name: string): { greeting: string; emoji: string } {
+  const h = new Date().getHours()
+  if (h < 12) return { greeting: `Good morning, ${name}`, emoji: '☀️' }
+  if (h < 17) return { greeting: `Good afternoon, ${name}`, emoji: '👋' }
+  return              { greeting: `Good evening, ${name}`,  emoji: '🌙' }
 }
 
 // ---------------------------------------------------------------------------
@@ -89,13 +93,11 @@ export default function DashboardPage() {
 
   useEffect(() => { void fetchApps() }, [fetchApps])
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
-
   async function handleDelete(appId: string, appName: string) {
     if (!confirm(`Delete "${appName}"? This cannot be undone.`)) return
     try {
       const res = await fetch(`${API_BASE}/api/v1/apps/${appId}`, {
-        method:  'DELETE',
+        method: 'DELETE',
         headers: { Authorization: `Bearer ${accessToken ?? ''}` },
       })
       if (!res.ok && res.status !== 204) {
@@ -195,96 +197,125 @@ export default function DashboardPage() {
     }
   }
 
-  // ── Derived stats ──────────────────────────────────────────────────────────
   const totalVisits    = apps.reduce((s, a) => s + a._count.launchEvents, 0)
   const publishedCount = apps.filter(a => a.status === 'PUBLISHED').length
-  const displayLabel   = user?.displayName || user?.email?.split('@')[0] || ''
+  const firstName      = (user?.displayName || user?.email?.split('@')[0] || 'there').split(' ')[0] ?? 'there'
+  const { greeting, emoji } = getGreeting(firstName)
 
   if (authLoading || (!user && !authLoading)) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-[#FDFDF9]">
-        <Loader2 className="h-6 w-6 animate-spin text-stone-400" />
+      <div className="flex min-h-screen items-center justify-center" style={{ background: 'rgb(var(--color-background))' }}>
+        <Loader2 className="h-6 w-6 animate-spin text-sky-400" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#FDFDF9]">
+    <div className="min-h-screen" style={{ background: 'rgb(var(--color-background))' }}>
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
 
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
-          {user?.avatarUrl ? (
-            <Image
-              src={user.avatarUrl} alt={displayLabel}
-              width={52} height={52}
-              className="h-[52px] w-[52px] rounded-full object-cover border border-stone-200 shrink-0"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-teal-100 text-xl font-bold text-teal-700 uppercase select-none">
-              {displayLabel[0] ?? '?'}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-stone-900">
-              {displayLabel ? `Hi, ${displayLabel.split(' ')[0]}` : 'My Apps'}
-            </h1>
-            <p className="text-sm text-stone-500 truncate">{user?.email} — manage your apps</p>
-          </div>
-          {/* Add App button — always visible, prominent on mobile */}
-          <Link
-            href="/submit"
-            className={cn(
-              'relative z-10 flex shrink-0 items-center gap-1.5 rounded-full transition-colors',
-              'bg-teal-700 text-white hover:bg-teal-600',
-              'px-3 py-2 sm:px-4 sm:py-2',
-              'text-xs sm:text-sm font-semibold shadow-sm',
+        {/* ── Personal header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-10 flex items-center gap-4"
+        >
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            {user?.avatarUrl ? (
+              <Image
+                src={user.avatarUrl} alt={firstName}
+                width={64} height={64}
+                className="h-16 w-16 rounded-2xl object-cover border-2 border-white shadow-md"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-teal-400 text-2xl font-black text-white shadow-md select-none">
+                {firstName[0]?.toUpperCase() ?? '?'}
+              </div>
             )}
-            aria-label="Submit a new app"
-          >
-            <Plus className="h-4 w-4" aria-hidden />
-            <span className="hidden xs:inline sm:inline">Add App</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => { logout(); router.replace('/') }}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
-            title="Sign out"
-            aria-label="Sign out"
-          >
-            <LogOut className="h-4 w-4" aria-hidden />
-          </button>
-        </div>
+            <span className="absolute -bottom-1 -right-1 text-lg">{emoji}</span>
+          </div>
 
-        {/* Stats */}
-        <div className="mb-8 grid grid-cols-3 gap-3 sm:gap-4">
-          <StatCard label="Total Apps"   value={apps.length}    icon={<LayoutDashboard className="h-4 w-4" />} color="stone"  />
-          <StatCard label="Published"    value={publishedCount} icon={<CheckCircle className="h-4 w-4" />}     color="teal"   />
-          <StatCard label="Total Visits" value={totalVisits}    icon={<MousePointerClick className="h-4 w-4"/>} color="indigo" />
-        </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{greeting}</h1>
+            <p className="text-sm text-slate-400 mt-0.5 truncate">
+              {publishedCount > 0
+                ? `${publishedCount} app${publishedCount !== 1 ? 's' : ''} live · ${totalVisits} total visits`
+                : 'Ready to launch your first app?'}
+            </p>
+          </div>
 
-        {/* Security alert — shown when apps are held for manual review */}
-        {!loading && apps.some(a =>
-          a.status === 'SUBMITTED' && a.securityAuditReport != null
-        ) && (
-          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/submit"
+              className="flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-sky-500 to-teal-400 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-sky-200/60 transition-all hover:shadow-lg hover:opacity-90 active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              New App
+            </Link>
+            <button
+              type="button"
+              onClick={() => { logout(); router.replace('/') }}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 hover:bg-white hover:text-slate-600 transition-colors shadow-sm border border-slate-100/80"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </motion.div>
+
+        {/* ── Stats row ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-8 grid grid-cols-3 gap-3"
+        >
+          <StatCard
+            label="Total Apps"
+            value={apps.length}
+            icon={<TrendingUp className="h-4 w-4" />}
+            color="slate"
+          />
+          <StatCard
+            label="Published"
+            value={publishedCount}
+            icon={<CheckCircle className="h-4 w-4" />}
+            color="sky"
+          />
+          <StatCard
+            label="Visits"
+            value={totalVisits}
+            icon={<MousePointerClick className="h-4 w-4" />}
+            color="teal"
+          />
+        </motion.div>
+
+        {/* ── Security alert ── */}
+        {!loading && apps.some(a => a.status === 'SUBMITTED' && a.securityAuditReport != null) && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
+          >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
             <div>
-              <p className="font-semibold">Security Review Required</p>
-              <p className="mt-0.5 font-light text-red-600">
+              <p className="font-bold">Security Review Required</p>
+              <p className="mt-0.5 text-red-600 font-normal">
                 {apps.filter(a => a.status === 'SUBMITTED' && a.securityAuditReport != null).length === 1
-                  ? 'One of your apps did not pass the automated security check and is awaiting manual review.'
-                  : `${apps.filter(a => a.status === 'SUBMITTED' && a.securityAuditReport != null).length} of your apps did not pass the automated security check and are awaiting manual review.`}
+                  ? 'One of your apps is awaiting manual security review.'
+                  : `${apps.filter(a => a.status === 'SUBMITTED' && a.securityAuditReport != null).length} apps are awaiting manual security review.`}
               </p>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* App grid */}
+        {/* ── App grid ── */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-stone-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-sky-400" />
           </div>
         ) : error ? (
           <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
@@ -292,27 +323,35 @@ export default function DashboardPage() {
             {error}
           </div>
         ) : apps.length === 0 ? (
-          <EmptyState />
+          <EmptyState name={firstName} />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {apps.map(app => (
-              <AppCard
-                key={app.id}
-                app={app}
-                publishing={publishingId === app.id}
-                onEdit={() => setEditingApp(app)}
-                onDelete={() => handleDelete(app.id, app.name)}
-                onArchive={() => handleArchive(app.id)}
-                onPublish={() => handlePublish(app.id)}
-                onRename={(name) => handleRename(app.id, name)}
-                onIconUpload={(file) => handleIconUpload(app.id, file)}
-              />
-            ))}
-          </div>
+          <AnimatePresence>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {apps.map((app, i) => (
+                <motion.div
+                  key={app.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <AppCard
+                    app={app}
+                    publishing={publishingId === app.id}
+                    onEdit={() => setEditingApp(app)}
+                    onDelete={() => handleDelete(app.id, app.name)}
+                    onArchive={() => handleArchive(app.id)}
+                    onPublish={() => handlePublish(app.id)}
+                    onRename={(name) => handleRename(app.id, name)}
+                    onIconUpload={(file) => handleIconUpload(app.id, file)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </AnimatePresence>
         )}
 
       </div>
-      {/* Edit modal */}
+
       {editingApp && (
         <EditAppModal
           open
@@ -344,27 +383,23 @@ function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRe
   const [menuOpen,    setMenuOpen]    = useState(false)
   const [renaming,    setRenaming]    = useState(false)
   const [renameValue, setRenameValue] = useState(app.name)
-  const menuRef    = useRef<HTMLDivElement>(null)
-  const renameRef  = useRef<HTMLInputElement>(null)
+  const menuRef      = useRef<HTMLDivElement>(null)
+  const renameRef    = useRef<HTMLInputElement>(null)
   const iconInputRef = useRef<HTMLInputElement>(null)
 
   const hue    = ((app.name.charCodeAt(0) ?? 65) * 137) % 360
   const st     = STATUS[app.status] ?? STATUS['DRAFT']!
-  const accent = app.primaryColor ?? null
+  const accent = app.primaryColor ?? `hsl(${hue}deg 55% 60%)`
 
-  // Close menu on outside click
   useEffect(() => {
     if (!menuOpen) return
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [menuOpen])
 
-  // Focus rename input when it opens
   useEffect(() => {
     if (renaming) renameRef.current?.select()
   }, [renaming])
@@ -382,61 +417,52 @@ function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRe
     e.target.value = ''
   }
 
+  const isPublished = app.status === 'PUBLISHED'
+  const isDraft     = app.status === 'DRAFT'
+
   return (
     <div
       className={cn(
-        'relative flex flex-col rounded-2xl border border-stone-200/80 bg-white overflow-hidden',
-        'shadow-sm hover:shadow-md transition-shadow duration-200',
-        app.status === 'ARCHIVED' && 'opacity-70',
+        'relative flex flex-col rounded-3xl bg-white overflow-hidden',
+        'border border-slate-100',
+        'shadow-sm hover:shadow-lg hover:shadow-slate-200/60 transition-all duration-200',
+        app.status === 'ARCHIVED' && 'opacity-60',
       )}
-      style={{
-        background: 'linear-gradient(145deg, #ffffff 0%, #f8f7f4 100%)',
-      }}
     >
-      {/* Top accent strip — primaryColor if set, else status dot color */}
-      <div
-        className={cn('h-0.5 w-full', !accent && st.dot)}
-        style={accent ? { backgroundColor: accent } : undefined}
-      />
+      {/* Top accent strip — app's brand color */}
+      <div className="h-1 w-full shrink-0" style={{ background: accent }} />
 
-      {/* Card body */}
-      <div className="p-4 flex flex-col gap-3 flex-1">
+      <div className="flex flex-col flex-1 p-4 gap-3">
 
-        {/* Row 1: Icon + Name + Menu */}
+        {/* Row: Icon + Name + Menu */}
         <div className="flex items-start gap-3">
 
-          {/* App icon / logo */}
+          {/* Clickable icon */}
           <button
             type="button"
             title="Change logo"
             onClick={() => iconInputRef.current?.click()}
-            className="group relative shrink-0 h-12 w-12 rounded-xl overflow-hidden border border-stone-200 bg-stone-100 hover:border-teal-300 transition-colors"
+            className="group relative shrink-0 h-14 w-14 rounded-2xl overflow-hidden border border-slate-100 hover:border-sky-300 transition-all duration-150"
           >
             {app.iconUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={app.iconUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <div
-                className="flex h-full w-full items-center justify-center text-lg font-bold text-white select-none"
-                style={{ background: accent ?? `hsl(${hue}deg 35% 75%)` }}
+                className="flex h-full w-full items-center justify-center text-xl font-black text-white select-none"
+                style={{ background: accent }}
               >
                 {app.name[0]?.toUpperCase() ?? '?'}
               </div>
             )}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
               <ImagePlus className="h-4 w-4 text-white" />
             </div>
           </button>
-          <input
-            ref={iconInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleIconFileChange}
-          />
+          <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconFileChange} />
 
           {/* Name + status */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pt-0.5">
             {renaming ? (
               <input
                 ref={renameRef}
@@ -447,20 +473,19 @@ function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRe
                   if (e.key === 'Enter')  { e.preventDefault(); commitRename() }
                   if (e.key === 'Escape') { setRenameValue(app.name); setRenaming(false) }
                 }}
-                className="w-full text-sm font-semibold text-stone-900 bg-white border border-teal-400 rounded-lg px-2 py-0.5 outline-none ring-2 ring-teal-400/20"
+                className="w-full text-sm font-bold text-slate-900 bg-white border border-sky-400 rounded-xl px-2.5 py-1 outline-none ring-2 ring-sky-400/20"
                 maxLength={100}
               />
             ) : (
               <Link
                 href={`/apps/${app.slug}`}
-                className="text-sm font-semibold text-stone-900 truncate leading-snug hover:text-teal-700 transition-colors"
+                className="block text-sm font-black text-slate-900 truncate leading-snug hover:text-sky-600 transition-colors"
               >
                 {app.name}
               </Link>
             )}
-            {/* Status badge */}
             <span className={cn(
-              'mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium',
+              'mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold',
               st.badge,
             )}>
               <span className={cn('h-1.5 w-1.5 rounded-full', st.dot)} />
@@ -468,84 +493,59 @@ function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRe
             </span>
           </div>
 
-          {/* Three-dot menu */}
+          {/* Menu */}
           <div ref={menuRef} className="relative shrink-0">
             <button
               type="button"
               onClick={() => setMenuOpen(v => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
-              aria-label="More options"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
             >
               <MoreVertical className="h-4 w-4" />
             </button>
-
             {menuOpen && (
-              <div className="absolute right-0 top-8 z-20 min-w-[160px] rounded-xl border border-stone-200 bg-white py-1 shadow-lg">
-                <MenuItem
-                  icon={<Type className="h-3.5 w-3.5" />}
-                  label="Rename"
-                  onClick={() => { setMenuOpen(false); setRenaming(true) }}
-                />
-                <MenuItem
-                  icon={<ImagePlus className="h-3.5 w-3.5" />}
-                  label="Change logo"
-                  onClick={() => { setMenuOpen(false); iconInputRef.current?.click() }}
-                />
-                {app.status === 'PUBLISHED' && (
-                  <MenuItem
-                    icon={<Archive className="h-3.5 w-3.5" />}
-                    label="Archive"
-                    onClick={() => { setMenuOpen(false); onArchive() }}
-                  />
+              <div className="absolute right-0 top-9 z-20 min-w-[160px] rounded-2xl border border-slate-100 bg-white py-1.5 shadow-xl shadow-slate-200/60">
+                <MenuItem icon={<Type className="h-3.5 w-3.5" />}     label="Rename"       onClick={() => { setMenuOpen(false); setRenaming(true) }} />
+                <MenuItem icon={<ImagePlus className="h-3.5 w-3.5" />} label="Change logo"  onClick={() => { setMenuOpen(false); iconInputRef.current?.click() }} />
+                {isPublished && (
+                  <MenuItem icon={<Archive className="h-3.5 w-3.5" />} label="Archive"     onClick={() => { setMenuOpen(false); onArchive() }} />
                 )}
-                <div className="my-1 h-px bg-stone-100" />
-                <MenuItem
-                  icon={<Trash2 className="h-3.5 w-3.5" />}
-                  label="Delete"
-                  danger
-                  onClick={() => { setMenuOpen(false); onDelete() }}
-                />
+                <div className="my-1 h-px bg-slate-100" />
+                <MenuItem icon={<Trash2 className="h-3.5 w-3.5" />}   label="Delete"       danger onClick={() => { setMenuOpen(false); onDelete() }} />
               </div>
             )}
           </div>
         </div>
 
         {/* Tagline */}
-        <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">{app.tagline}</p>
+        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{app.tagline}</p>
 
         {/* Visits */}
-        <div className="flex items-center gap-1 text-xs text-stone-400">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
           <MousePointerClick className="h-3 w-3" />
-          <span>{app._count.launchEvents} visit{app._count.launchEvents !== 1 ? 's' : ''}</span>
+          {app._count.launchEvents > 0
+            ? <span><span className="text-slate-700 font-bold">{app._count.launchEvents}</span> visit{app._count.launchEvents !== 1 ? 's' : ''}</span>
+            : <span>No visits yet</span>
+          }
         </div>
       </div>
 
       {/* Footer actions */}
-      <div className="flex items-center gap-2 border-t border-stone-100 px-4 py-3 bg-stone-50/50">
+      <div className="flex items-center gap-2 border-t border-slate-50 bg-slate-50/60 px-4 py-3">
         <button
           type="button"
           onClick={onEdit}
-          className={cn(
-            'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5',
-            'text-xs font-medium border transition-colors',
-            'border-stone-200 text-stone-600 hover:bg-white hover:border-stone-300',
-          )}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-semibold border border-slate-200 text-slate-600 bg-white hover:border-sky-300 hover:text-sky-600 transition-all duration-150"
         >
           <Pencil className="h-3 w-3" />
           Edit
         </button>
 
-        {app.status === 'DRAFT' ? (
+        {isDraft ? (
           <button
             type="button"
             onClick={onPublish}
             disabled={publishing}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5',
-              'text-xs font-medium border transition-colors',
-              'bg-teal-600 border-teal-600 text-white hover:bg-teal-700 hover:border-teal-700',
-              'disabled:opacity-60 disabled:cursor-not-allowed',
-            )}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold bg-gradient-to-r from-sky-500 to-teal-400 text-white shadow-sm shadow-sky-200/60 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {publishing
               ? <><Loader2 className="h-3 w-3 animate-spin" /> Publishing…</>
@@ -557,20 +557,13 @@ function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRe
             href={`${API_BASE}/api/v1/apps/${app.id}/visit`}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5',
-              'text-xs font-medium border transition-colors',
-              'bg-teal-600 border-teal-600 text-white hover:bg-teal-700 hover:border-teal-700',
-            )}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold bg-gradient-to-r from-sky-500 to-teal-400 text-white shadow-sm shadow-sky-200/60 hover:opacity-90 transition-all"
           >
             <ExternalLink className="h-3 w-3" />
-            Live Page
+            View Live
           </a>
         ) : (
-          <span className={cn(
-            'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5',
-            'text-xs font-medium border border-stone-200 text-stone-300 cursor-not-allowed select-none',
-          )}>
+          <span className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-medium border border-slate-100 text-slate-300 cursor-not-allowed select-none">
             <ExternalLink className="h-3 w-3" />
             No URL
           </span>
@@ -581,12 +574,10 @@ function AppCard({ app, publishing, onEdit, onDelete, onArchive, onPublish, onRe
 }
 
 // ---------------------------------------------------------------------------
-// Menu item
+// MenuItem
 // ---------------------------------------------------------------------------
 
-function MenuItem({
-  icon, label, onClick, danger = false,
-}: {
+function MenuItem({ icon, label, onClick, danger = false }: {
   icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean
 }) {
   return (
@@ -594,10 +585,8 @@ function MenuItem({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex w-full items-center gap-2.5 px-3 py-1.5 text-xs transition-colors',
-        danger
-          ? 'text-red-500 hover:bg-red-50'
-          : 'text-stone-700 hover:bg-stone-50',
+        'flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-medium transition-colors',
+        danger ? 'text-red-500 hover:bg-red-50' : 'text-slate-700 hover:bg-slate-50',
       )}
     >
       {icon}
@@ -612,15 +601,21 @@ function MenuItem({
 
 function StatCard({ label, value, icon, color }: {
   label: string; value: number; icon: React.ReactNode
-  color: 'stone' | 'teal' | 'indigo'
+  color: 'slate' | 'sky' | 'teal'
 }) {
-  const bg   = { stone: 'bg-stone-100', teal: 'bg-teal-50',    indigo: 'bg-indigo-50'    }[color]
-  const text = { stone: 'text-stone-600', teal: 'text-teal-700', indigo: 'text-indigo-700' }[color]
+  const styles = {
+    slate: { icon: 'bg-slate-100 text-slate-600', value: 'text-slate-900' },
+    sky:   { icon: 'bg-sky-50 text-sky-600',      value: 'text-sky-700'   },
+    teal:  { icon: 'bg-teal-50 text-teal-600',    value: 'text-teal-700'  },
+  }[color]
+
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3 sm:px-5 sm:py-4">
-      <div className={cn('mb-2 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg', bg, text)}>{icon}</div>
-      <p className="text-xl sm:text-2xl font-bold text-stone-900">{value}</p>
-      <p className="text-[10px] sm:text-xs text-stone-500 mt-0.5">{label}</p>
+    <div className="rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm">
+      <div className={cn('mb-3 flex h-8 w-8 items-center justify-center rounded-xl', styles.icon)}>
+        {icon}
+      </div>
+      <p className={cn('text-2xl font-black', styles.value)}>{value}</p>
+      <p className="text-[11px] font-medium text-slate-400 mt-0.5 uppercase tracking-wide">{label}</p>
     </div>
   )
 }
@@ -629,16 +624,28 @@ function StatCard({ label, value, icon, color }: {
 // EmptyState
 // ---------------------------------------------------------------------------
 
-function EmptyState() {
+function EmptyState({ name }: { name: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-50 border border-teal-100">
-        <Plus className="h-7 w-7 text-teal-600" />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <div className="mb-6 relative">
+        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-500 to-teal-400 shadow-lg shadow-sky-200/60">
+          <Zap className="h-9 w-9 text-white" />
+        </div>
+        <span className="absolute -top-2 -right-2 text-2xl">🚀</span>
       </div>
-      <h2 className="text-base font-semibold text-stone-800">No apps yet</h2>
-      <p className="mt-1.5 text-sm text-stone-500 max-w-xs">
-        Submit your first app using the &ldquo;Submit App&rdquo; button in the navigation.
+      <h2 className="text-xl font-black text-slate-900">Let&apos;s build something, {name}!</h2>
+      <p className="mt-2 text-sm text-slate-500 max-w-xs leading-relaxed">
+        You haven&apos;t launched any apps yet. Submit your first one and start earning XP.
       </p>
-    </div>
+      <Link href="/submit" className="btn-primary mt-6">
+        <Plus className="h-4 w-4" />
+        Launch Your First App
+      </Link>
+    </motion.div>
   )
 }

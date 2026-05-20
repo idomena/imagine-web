@@ -1,20 +1,24 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Star, Users, ExternalLink, ArrowUpRight, MessageSquare } from 'lucide-react'
+import {
+  ArrowLeft, Star, ExternalLink, ArrowUpRight,
+  MessageSquare, Zap, Trophy, Sparkles,
+} from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 import { ReviewForm } from '@/components/apps/ReviewForm'
 import type { ApiResponse, App, AppAsset, Category, ReviewStats } from '@/lib/api/types'
 
 // ---------------------------------------------------------------------------
-// App detail page  —  /apps/[id]  (accepts UUID or slug)
-// Universal high-end product landing page template
+// Types
 // ---------------------------------------------------------------------------
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// ── Data fetching ─────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Data fetching
+// ---------------------------------------------------------------------------
 
 async function getAppDetail(slug: string) {
   try {
@@ -59,7 +63,9 @@ async function getReviews(appId: string): Promise<ReviewStats> {
   }
 }
 
-// ── Colour utilities ──────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Colour utilities
+// ---------------------------------------------------------------------------
 
 function isLightColor(hex: string): boolean {
   try {
@@ -83,7 +89,22 @@ function darken(hex: string, amount = 0.15): string {
   }
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+function stableXP(id: string): number {
+  let h = 5381
+  for (let i = 0; i < id.length; i++) h = ((h << 5) + h) ^ id.charCodeAt(i)
+  return (Math.abs(h) % 90) + 10
+}
+
+function appLevel(reviewCount: number): { label: string; color: string; bg: string } {
+  if (reviewCount >= 21) return { label: '🏆 Legendary', color: '#B45309', bg: '#FEF3C7' }
+  if (reviewCount >= 6)  return { label: '🔥 Popular',   color: '#EA580C', bg: '#FFF7ED' }
+  if (reviewCount >= 1)  return { label: '⬆ Rising',    color: '#0284C7', bg: '#E0F2FE' }
+  return                        { label: '✦ New',        color: '#0891B2', bg: '#ECFEFF' }
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default async function AppDetailPage({ params }: PageProps) {
   const { id: slug } = await params
@@ -97,16 +118,15 @@ export default async function AppDetailPage({ params }: PageProps) {
     getReviews(app.id),
   ])
 
-  const screenshots = assets
-    .filter(a => a.type === 'SCREENSHOT')
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-
+  const screenshots  = assets.filter(a => a.type === 'SCREENSHOT').sort((a, b) => a.sortOrder - b.sortOrder)
   const logoUrl      = app.iconUrl ?? null
   const videoUrl     = app.videoUrl ?? null
-  const primaryColor = app.primaryColor ?? '#14b8a6'
+  const primaryColor = app.primaryColor ?? '#0EA5E9'
   const light        = isLightColor(primaryColor)
   const onBrand      = light ? '#1c1917' : '#ffffff'
   const visitUrl     = `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'}/api/v1/apps/${app.id}/visit`
+  const xp           = stableXP(app.id)
+  const level        = appLevel(reviewStats.total)
 
   const mediaItems: ({ type: 'video'; src: string } | { type: 'image'; src: string })[] = [
     ...(videoUrl ? [{ type: 'video' as const, src: videoUrl }] : []),
@@ -114,62 +134,78 @@ export default async function AppDetailPage({ params }: PageProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-[#FDFDF9]">
+    <div className="min-h-screen animate-fade-in" style={{ background: 'rgb(var(--color-background))' }}>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          HERO — full-width, brand-coloured
+          HERO — brand-colored, now with name + tagline + game badges
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         className="relative w-full overflow-hidden"
         style={{ background: primaryColor }}
       >
+        {/* Radial glow overlay */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 70% 80% at 50% 60%, ${light ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)'} 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse 70% 80% at 50% 60%, ${light ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.10)'} 0%, transparent 70%)`,
           }}
           aria-hidden
         />
 
+        {/* Dot grid texture */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `radial-gradient(circle, ${onBrand}44 1px, transparent 1px)`,
+            backgroundSize: '24px 24px',
+          }}
+          aria-hidden
+        />
+
+        {/* Back button */}
         <div className="relative z-10 mx-auto max-w-4xl px-5 pt-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all hover:scale-105"
             style={{
-              background: light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)',
+              background: light ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.18)',
               color: onBrand,
             }}
           >
-            <ArrowLeft className="h-3 w-3" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back
           </Link>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-5xl px-6 pb-16 pt-10 flex flex-col items-center">
-          <div className="flex w-full items-center justify-center">
+        {/* Hero content */}
+        <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pb-20 pt-8 flex flex-col items-center text-center">
+
+          {/* Floating icon */}
+          <div className="animate-float mb-6">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoUrl}
                 alt={app.name}
                 style={{
-                  maxWidth:  '100%',
-                  maxHeight: 240,
-                  width:     'auto',
-                  height:    'auto',
+                  maxWidth: '100%',
+                  maxHeight: 120,
+                  width: 'auto',
+                  height: 'auto',
                   objectFit: 'contain',
-                  filter:    `drop-shadow(0 12px 36px ${light ? 'rgba(0,0,0,0.22)' : 'rgba(0,0,0,0.45)'})`,
+                  filter: `drop-shadow(0 12px 32px ${light ? 'rgba(0,0,0,0.22)' : 'rgba(0,0,0,0.45)'})`,
+                  borderRadius: 24,
                 }}
               />
             ) : (
               <div
-                className="flex items-center justify-center rounded-[24px] text-7xl font-black select-none"
+                className="flex items-center justify-center rounded-3xl text-6xl font-black select-none"
                 style={{
-                  width:     160,
-                  height:    160,
+                  width: 120,
+                  height: 120,
                   background: light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.18)',
-                  color:      onBrand,
-                  boxShadow:  `0 16px 48px ${light ? 'rgba(0,0,0,0.20)' : 'rgba(0,0,0,0.40)'}`,
+                  color: onBrand,
+                  boxShadow: `0 16px 48px ${light ? 'rgba(0,0,0,0.20)' : 'rgba(0,0,0,0.40)'}`,
                 }}
               >
                 {app.name.trim()[0]?.toUpperCase() ?? '?'}
@@ -177,27 +213,87 @@ export default async function AppDetailPage({ params }: PageProps) {
             )}
           </div>
 
+          {/* App name */}
+          <h1
+            className="text-3xl sm:text-4xl font-black tracking-tight leading-tight"
+            style={{ color: onBrand }}
+          >
+            {app.name}
+          </h1>
+
+          {/* Tagline */}
+          {app.tagline && (
+            <p
+              className="mt-2 text-base sm:text-lg font-medium max-w-xl leading-relaxed"
+              style={{ color: `${onBrand}bb` }}
+            >
+              {app.tagline}
+            </p>
+          )}
+
+          {/* Game badges row */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            {/* Category */}
+            {category && (
+              <span
+                className="rounded-full px-3 py-1 text-[11px] font-bold"
+                style={{
+                  background: light ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.18)',
+                  color: onBrand,
+                }}
+              >
+                {category.name}
+              </span>
+            )}
+
+            {/* Level */}
+            <span
+              className="rounded-full px-3 py-1 text-[11px] font-bold"
+              style={{
+                background: light ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.18)',
+                color: onBrand,
+              }}
+            >
+              {level.label}
+            </span>
+
+            {/* XP */}
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold"
+              style={{
+                background: light ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.18)',
+                color: onBrand,
+              }}
+            >
+              <Zap className="h-3 w-3" />
+              +{xp} XP on launch
+            </span>
+          </div>
+
+          {/* CTA */}
           {app.launchUrl && (
             <a
               href={visitUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-bold transition-all duration-150 active:scale-[0.98]"
+              className="mt-8 inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-bold transition-all duration-150 hover:scale-105 hover:shadow-2xl active:scale-[0.98]"
               style={{
-                background: light ? 'rgba(0,0,0,0.80)' : 'rgba(255,255,255,0.92)',
+                background: light ? 'rgba(0,0,0,0.82)' : 'rgba(255,255,255,0.94)',
                 color:      light ? '#ffffff' : primaryColor,
-                boxShadow:  '0 4px 24px rgba(0,0,0,0.25)',
+                boxShadow:  '0 6px 28px rgba(0,0,0,0.28)',
               }}
             >
+              <Sparkles className="h-4 w-4" />
               Open App
               <ArrowUpRight className="h-4 w-4" />
             </a>
           )}
         </div>
 
+        {/* Fade to page background */}
         <div
-          className="pointer-events-none absolute bottom-0 left-0 right-0 h-16"
-          style={{ background: 'linear-gradient(to bottom, transparent, #FDFDF9)' }}
+          className="pointer-events-none absolute bottom-0 left-0 right-0 h-20"
+          style={{ background: 'linear-gradient(to bottom, transparent, rgb(var(--color-background)))' }}
           aria-hidden
         />
       </section>
@@ -207,46 +303,52 @@ export default async function AppDetailPage({ params }: PageProps) {
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-24">
 
-        {/* ── Social Proof bar ─────────────────────────────────────────────── */}
-        <SocialProofBar
+        {/* Stats bar */}
+        <StatsBar
           primaryColor={primaryColor}
           light={light}
           avgRating={reviewStats.avgRating}
           reviewCount={reviewStats.total}
+          xp={xp}
+          level={level}
           recentReviewers={reviewStats.items.slice(0, 4).map(r => r.user)}
         />
 
-        {/* ── Media ────────────────────────────────────────────────────────── */}
+        {/* Media */}
         {mediaItems.length > 0 && (
           <section className="mt-10">
             <MediaStrip items={mediaItems} />
           </section>
         )}
 
-        {/* ── Description ──────────────────────────────────────────────────── */}
+        {/* Description */}
         {app.description && (
-          <section className="mt-10">
-            <p className="text-sm sm:text-base leading-relaxed text-stone-600 whitespace-pre-line">
-              {app.description}
-            </p>
+          <section className="mt-8">
+            <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+              <h2 className="text-sm font-black text-slate-900 mb-3 uppercase tracking-wider">About</h2>
+              <p className="text-sm sm:text-base leading-relaxed text-slate-600 whitespace-pre-line">
+                {app.description}
+              </p>
+            </div>
           </section>
         )}
 
-        {/* ── Big CTA ──────────────────────────────────────────────────────── */}
+        {/* Big CTA */}
         {app.launchUrl && (
-          <section className="mt-12">
+          <section className="mt-8">
             <BigCTA
               href={visitUrl}
               primaryColor={primaryColor}
               darkened={darken(primaryColor, 0.12)}
               onBrand={onBrand}
+              xp={xp}
             />
           </section>
         )}
 
-        {/* ── Community / Reviews ──────────────────────────────────────────── */}
-        <section className="mt-14">
-          <CommunitySection
+        {/* Reviews */}
+        <section className="mt-10">
+          <ReviewsSection
             primaryColor={primaryColor}
             light={light}
             appId={app.id}
@@ -259,30 +361,121 @@ export default async function AppDetailPage({ params }: PageProps) {
   )
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// StatsBar
+// ---------------------------------------------------------------------------
+
+interface ReviewerMeta { id: string; email: string; avatarUrl: string | null }
+
+function StatsBar({
+  primaryColor, light, avgRating, reviewCount, xp, level, recentReviewers,
+}: {
+  primaryColor:    string
+  light:           boolean
+  avgRating:       number | null
+  reviewCount:     number
+  xp:              number
+  level:           { label: string; color: string; bg: string }
+  recentReviewers: ReviewerMeta[]
+}) {
+  const accentText = light ? darken(primaryColor, 0.25) : primaryColor
+  const hasReviews = reviewCount > 0
+
+  return (
+    <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+      {/* Rating */}
+      <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm">
+        <div className="flex gap-0.5">
+          {[1,2,3,4,5].map(i => {
+            const filled = hasReviews && avgRating ? i <= Math.round(avgRating) : false
+            return (
+              <Star
+                key={i}
+                className="h-3.5 w-3.5"
+                fill={filled ? accentText : 'none'}
+                stroke={filled ? accentText : '#cbd5e1'}
+                strokeWidth={1.5}
+              />
+            )
+          })}
+        </div>
+        <span className="text-lg font-black text-slate-900">
+          {hasReviews && avgRating ? avgRating.toFixed(1) : '—'}
+        </span>
+        <span className="text-[11px] text-slate-400">{reviewCount} review{reviewCount !== 1 ? 's' : ''}</span>
+      </div>
+
+      {/* XP */}
+      <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 shadow-sm">
+        <Zap className="h-5 w-5 fill-amber-400 text-amber-400" />
+        <span className="text-lg font-black text-amber-700">+{xp}</span>
+        <span className="text-[11px] text-amber-500 font-medium">XP reward</span>
+      </div>
+
+      {/* Level */}
+      <div
+        className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border px-4 py-4 shadow-sm"
+        style={{ background: level.bg, borderColor: `${level.color}33` }}
+      >
+        <Trophy className="h-5 w-5" style={{ color: level.color }} />
+        <span className="text-sm font-black" style={{ color: level.color }}>{level.label}</span>
+        <span className="text-[11px] font-medium" style={{ color: `${level.color}99` }}>app level</span>
+      </div>
+
+      {/* Community */}
+      <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm">
+        {recentReviewers.length > 0 ? (
+          <div className="flex -space-x-1.5">
+            {recentReviewers.slice(0, 4).map((r, i) => {
+              const name = r.email.split('@')[0] ?? '?'
+              return r.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={r.id} src={r.avatarUrl} alt={name} referrerPolicy="no-referrer"
+                  className="h-7 w-7 rounded-full border-2 border-white object-cover" />
+              ) : (
+                <div key={r.id}
+                  className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white select-none"
+                  style={{ background: `${primaryColor}${['cc','aa','88','66'][i] ?? '66'}` }}
+                >
+                  {name[0]?.toUpperCase() ?? '?'}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <MessageSquare className="h-5 w-5 text-slate-300" />
+        )}
+        <span className="text-[11px] text-slate-400 text-center leading-tight">
+          {hasReviews ? 'Community reviewed' : 'Be first to review'}
+        </span>
+      </div>
+
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// MediaStrip
+// ---------------------------------------------------------------------------
 
 type MediaItem = { type: 'video'; src: string } | { type: 'image'; src: string }
 
 function MediaStrip({ items }: { items: MediaItem[] }) {
   return (
     <div
-      className="mt-4 -mx-4 sm:-mx-6 flex gap-4 overflow-x-auto px-4 sm:px-6 pb-3"
-      style={{
-        scrollSnapType:          'x mandatory',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth:          'none',
-      } as React.CSSProperties}
+      className="-mx-4 sm:-mx-6 flex gap-4 overflow-x-auto px-4 sm:px-6 pb-3 scrollbar-hide"
+      style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
     >
       {items.map((item, i) => (
         <div
           key={i}
-          className="shrink-0 border border-stone-200 bg-stone-900"
+          className="shrink-0 overflow-hidden border border-slate-100 shadow-md"
           style={{
-            borderRadius:    24,
+            borderRadius: 24,
             scrollSnapAlign: 'start',
-            width:     'clamp(220px, 80vw, 480px)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.09)',
-            overflow:  'hidden',
+            width: 'clamp(220px, 80vw, 480px)',
+            background: '#0f172a',
           }}
         >
           {item.type === 'video' ? (
@@ -299,7 +492,7 @@ function MediaStrip({ items }: { items: MediaItem[] }) {
               src={item.src}
               alt={`Screenshot ${i + 1}`}
               loading={i === 0 ? 'eager' : 'lazy'}
-              style={{ display: 'block', width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 24, background: '#fafaf9' }}
+              style={{ display: 'block', width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 24, background: '#f8fafc' }}
             />
           )}
         </div>
@@ -309,132 +502,49 @@ function MediaStrip({ items }: { items: MediaItem[] }) {
   )
 }
 
-// ── Social proof bar — real data ──────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// BigCTA
+// ---------------------------------------------------------------------------
 
-interface ReviewerMeta { id: string; email: string; avatarUrl: string | null }
-
-function SocialProofBar({
-  primaryColor, light, avgRating, reviewCount, recentReviewers,
+function BigCTA({
+  href, primaryColor, darkened, onBrand, xp,
 }: {
-  primaryColor:     string
-  light:            boolean
-  avgRating:        number | null
-  reviewCount:      number
-  recentReviewers:  ReviewerMeta[]
+  href: string; primaryColor: string; darkened: string; onBrand: string; xp: number
 }) {
-  const accentText = light ? darken(primaryColor, 0.25) : primaryColor
-  const accentBg   = `${primaryColor}14`
-
-  const hasReviews = reviewCount > 0
-  const displayAvg = avgRating ? avgRating.toFixed(1) : null
-
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-stone-100 bg-white px-6 py-5 shadow-sm">
-
-      {/* Star rating */}
-      <div className="flex flex-col items-center gap-1">
-        <div className="flex items-center gap-0.5">
-          {[1, 2, 3, 4, 5].map(i => {
-            const filled = hasReviews && avgRating ? i <= Math.round(avgRating) : false
-            return (
-              <Star
-                key={i}
-                className="h-4 w-4"
-                fill={filled ? accentText : 'none'}
-                stroke={filled ? accentText : '#d6d3d1'}
-                strokeWidth={1.5}
-              />
-            )
-          })}
-        </div>
-        <span className="text-xs text-stone-500">
-          {hasReviews
-            ? <><strong className="text-stone-900">{displayAvg}</strong> ({reviewCount} review{reviewCount !== 1 ? 's' : ''})</>
-            : <span className="text-stone-400">No reviews yet</span>
-          }
-        </span>
-      </div>
-
-      <div className="h-8 w-px bg-stone-100" aria-hidden />
-
-      {/* User avatars */}
-      <div className="flex items-center gap-2.5">
-        {recentReviewers.length > 0 ? (
-          <ReviewerAvatars reviewers={recentReviewers} color={primaryColor} />
-        ) : (
-          <AvatarStackPlaceholder color={primaryColor} />
-        )}
-        <span className="text-xs text-stone-500">
-          {hasReviews
-            ? <><strong className="text-stone-900">{reviewCount}</strong> reviewer{reviewCount !== 1 ? 's' : ''}</>
-            : <span className="text-stone-400">Be the first!</span>
-          }
-        </span>
-      </div>
-
-      <div className="h-8 w-px bg-stone-100 hidden sm:block" aria-hidden />
-
-      {/* Community badge */}
-      <div
-        className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
-        style={{ background: accentBg, color: accentText }}
-      >
-        <MessageSquare className="h-3.5 w-3.5" />
-        {hasReviews ? 'Community reviews' : 'Leave a review'}
-      </div>
-    </div>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative flex w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-3xl px-8 py-6 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+      style={{
+        background: `linear-gradient(135deg, ${primaryColor} 0%, ${darkened} 100%)`,
+        color:      onBrand,
+        boxShadow:  `0 8px 40px ${primaryColor}55`,
+      }}
+    >
+      {/* Shimmer sweep */}
+      <span
+        className="pointer-events-none absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]"
+        aria-hidden
+      />
+      <span className="flex items-center gap-2 text-lg font-black">
+        <ExternalLink className="h-5 w-5" />
+        Launch App
+        <ArrowUpRight className="h-5 w-5 opacity-80" />
+      </span>
+      <span className="text-[12px] font-semibold opacity-70">
+        Earn +{xp} XP when you launch
+      </span>
+    </a>
   )
 }
 
-function ReviewerAvatars({ reviewers, color }: { reviewers: ReviewerMeta[]; color: string }) {
-  return (
-    <div className="flex -space-x-2">
-      {reviewers.map((r, i) => {
-        const name = r.email.split('@')[0] ?? '?'
-        const shades = ['cc', 'aa', '88', '66']
-        return r.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={r.id}
-            src={r.avatarUrl}
-            alt={name}
-            referrerPolicy="no-referrer"
-            className="h-7 w-7 rounded-full border-2 border-white object-cover"
-          />
-        ) : (
-          <div
-            key={r.id}
-            className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white select-none"
-            style={{ background: `${color}${shades[i] ?? '66'}` }}
-          >
-            {name[0]?.toUpperCase() ?? '?'}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+// ---------------------------------------------------------------------------
+// ReviewsSection
+// ---------------------------------------------------------------------------
 
-function AvatarStackPlaceholder({ color }: { color: string }) {
-  const shades = ['cc', 'aa', '88', '66']
-  return (
-    <div className="flex -space-x-2">
-      {shades.map((s, i) => (
-        <div
-          key={i}
-          className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white select-none"
-          style={{ background: `${color}${s}` }}
-        >
-          ?
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// ── Community Feedback section ────────────────────────────────────────────────
-
-function CommunitySection({ primaryColor, light, appId, reviewStats }: {
+function ReviewsSection({ primaryColor, light, appId, reviewStats }: {
   primaryColor: string
   light:        boolean
   appId:        string
@@ -444,40 +554,44 @@ function CommunitySection({ primaryColor, light, appId, reviewStats }: {
   const hasReviews = reviewStats.total > 0
 
   return (
-    <div className="mt-4 rounded-2xl border border-stone-100 bg-white overflow-hidden shadow-sm">
-      {/* Section header */}
-      <div className="px-6 py-5 border-b border-stone-100">
-        <div className="flex items-center justify-between">
+    <div className="rounded-3xl border border-slate-100 bg-white overflow-hidden shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-slate-50">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-teal-400 shadow-md shadow-sky-200/50">
+            <MessageSquare className="h-4 w-4 text-white" aria-hidden />
+          </div>
           <div>
-            <p className="text-sm font-semibold text-stone-800">
+            <p className="text-sm font-black text-slate-900">
               {hasReviews ? `Reviews (${reviewStats.total})` : 'Reviews'}
             </p>
-            <p className="text-xs text-stone-400 mt-0.5">
+            <p className="text-[11px] text-slate-400 mt-0.5">
               {hasReviews ? 'What the community thinks' : 'No reviews yet — be the first!'}
             </p>
           </div>
-          {hasReviews && reviewStats.avgRating && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xl font-bold text-stone-900">
-                {reviewStats.avgRating.toFixed(1)}
-              </span>
-              <div className="flex flex-col gap-0.5">
-                <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map(i => (
-                    <Star
-                      key={i}
-                      className="h-3.5 w-3.5"
-                      fill={i <= Math.round(reviewStats.avgRating!) ? accentText : 'none'}
-                      stroke={i <= Math.round(reviewStats.avgRating!) ? accentText : '#d6d3d1'}
-                      strokeWidth={1.5}
-                    />
-                  ))}
-                </div>
-                <span className="text-[10px] text-stone-400">out of 5</span>
-              </div>
-            </div>
-          )}
         </div>
+
+        {hasReviews && reviewStats.avgRating && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-2xl font-black text-slate-900">
+              {reviewStats.avgRating.toFixed(1)}
+            </span>
+            <div className="flex flex-col gap-0.5">
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(i => (
+                  <Star
+                    key={i}
+                    className="h-3.5 w-3.5"
+                    fill={i <= Math.round(reviewStats.avgRating!) ? accentText : 'none'}
+                    stroke={i <= Math.round(reviewStats.avgRating!) ? accentText : '#cbd5e1'}
+                    strokeWidth={1.5}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] text-slate-400">out of 5</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <ReviewForm
@@ -489,35 +603,5 @@ function CommunitySection({ primaryColor, light, appId, reviewStats }: {
         initialAvg={reviewStats.avgRating}
       />
     </div>
-  )
-}
-
-// ── Big CTA ───────────────────────────────────────────────────────────────────
-
-function BigCTA({
-  href, primaryColor, darkened, onBrand,
-}: {
-  href: string; primaryColor: string; darkened: string; onBrand: string
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-3xl px-8 py-5 text-lg font-black transition-all duration-200 active:scale-[0.99]"
-      style={{
-        background: `linear-gradient(135deg, ${primaryColor} 0%, ${darkened} 100%)`,
-        color:       onBrand,
-        boxShadow:  `0 8px 40px ${primaryColor}55`,
-      }}
-    >
-      <span
-        className="pointer-events-none absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]"
-        aria-hidden
-      />
-      <ExternalLink className="h-5 w-5" />
-      Open App
-      <ArrowUpRight className="h-5 w-5 opacity-80" />
-    </a>
   )
 }

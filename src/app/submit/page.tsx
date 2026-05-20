@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
-  CheckCircle, CheckCircle2, AlertCircle, ShieldAlert, Loader2, Upload, ImagePlus, LogIn, Camera, ArrowLeft, X, ShieldCheck,
+  CheckCircle, CheckCircle2, AlertCircle, ShieldAlert, Loader2, Upload, ImagePlus, LogIn, Camera, ArrowLeft, X, ShieldCheck, Rocket,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -416,38 +416,45 @@ export default function SubmitPage() {
 
           <div className={cn('w-full max-w-4xl rounded-3xl overflow-hidden', 'bg-white/80 backdrop-blur-xl', 'border border-white/60', 'shadow-[0_32px_80px_-8px_rgba(0,0,0,0.18)]')}>
 
-            <div className="h-[3px] w-full transition-colors duration-500" style={{ background: primaryColor ?? 'linear-gradient(90deg,#2D8B7A,#14b8a6)' }} />
+            <div className="h-1 w-full transition-colors duration-500" style={{ background: primaryColor ?? 'linear-gradient(90deg,#0EA5E9,#14b8a6)' }} />
 
-            <div className="px-10 pt-10 pb-8">
-              <h1 className="text-2xl font-bold text-stone-900">Submit Your App</h1>
-              <p className="mt-1.5 text-sm font-light text-stone-400">Share your creation with the community — it only takes a minute.</p>
+            <div className="px-8 sm:px-10 pt-10 pb-8">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-teal-400 shadow-md shadow-sky-200/60">
+                  <Rocket className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-black text-slate-900">Launch Your App</h1>
+                  <p className="text-sm text-slate-400 font-normal">Share your creation with the world — it only takes a minute.</p>
+                </div>
+              </div>
             </div>
 
             <div className="h-px bg-stone-100/80" />
 
             {!user ? (
               <div className="flex flex-col items-center justify-center gap-6 px-10 py-24 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-teal-50 border border-teal-100">
-                  <LogIn className="h-9 w-9 text-teal-600" />
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-sky-50 border border-sky-100">
+                  <LogIn className="h-9 w-9 text-sky-500" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-stone-900">Sign in to submit</p>
-                  <p className="mt-2 text-sm font-light text-stone-400 max-w-sm">You need to be signed in to share your app with the community.</p>
+                  <p className="text-lg font-black text-slate-900">Sign in to launch</p>
+                  <p className="mt-2 text-sm text-slate-400 max-w-sm">You need to be signed in to share your app with the community.</p>
                 </div>
-                <Link href="/sign-in" className="inline-flex items-center gap-2 rounded-full bg-teal-700 px-10 py-3.5 text-sm font-semibold text-white shadow-lg shadow-teal-700/20 hover:bg-teal-600 transition-all active:scale-95">
+                <Link href="/sign-in" className="btn-primary">
                   Sign In
                 </Link>
               </div>
 
             ) : formStatus === 'duplicate' && duplicateApp ? (
               <div className="flex flex-col items-center justify-center gap-6 px-10 py-24 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 border border-amber-100">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-50 border border-amber-100">
                   <AlertCircle className="h-9 w-9 text-amber-500" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-stone-900">Already submitted</p>
-                  <p className="mt-2 text-sm font-light text-stone-400 max-w-sm">
-                    You&apos;ve already submitted <strong className="font-medium text-stone-700">{duplicateApp.name}</strong>. Would you like to view it instead?
+                  <p className="text-lg font-black text-slate-900">Already launched</p>
+                  <p className="mt-2 text-sm text-slate-400 max-w-sm">
+                    You&apos;ve already submitted <strong className="font-semibold text-slate-700">{duplicateApp.name}</strong>. Would you like to view it instead?
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -457,11 +464,11 @@ export default function SubmitPage() {
                       setDuplicateApp(null); setFormStatus('idle')
                       await handleSubmit({ preventDefault: () => {} } as React.FormEvent)
                     }}
-                    className="px-6 py-2.5 text-sm font-medium text-stone-500 rounded-full hover:bg-stone-100 transition-colors"
+                    className="px-6 py-2.5 text-sm font-medium text-slate-500 rounded-2xl hover:bg-slate-100 transition-colors"
                   >
                     Submit anyway
                   </button>
-                  <Link href={`/apps/${duplicateApp.id}`} className="inline-flex items-center gap-2 rounded-full bg-teal-700 px-10 py-3.5 text-sm font-semibold text-white shadow-lg shadow-teal-700/20 hover:bg-teal-600 transition-all active:scale-95">
+                  <Link href={`/apps/${duplicateApp.id}`} className="btn-primary">
                     View app
                   </Link>
                 </div>
@@ -469,87 +476,86 @@ export default function SubmitPage() {
 
             ) : (
               /* ── Form — always shown; overlay covers it during scan ── */
-              <form onSubmit={handleSubmit} className="flex flex-col gap-8 px-10 py-10">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-0 px-8 sm:px-10 pb-10">
 
-                {/* Logo + Colour */}
-                <div className="flex items-start gap-8">
-                  <div className="flex flex-col items-center gap-2 shrink-0">
-                    <p className={sectionLabel}>App Logo</p>
-                    <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-                    <button
-                      type="button"
-                      onClick={() => logoInputRef.current?.click()}
-                      className="group relative h-[100px] w-[100px] overflow-hidden rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/80 hover:border-teal-400 transition-all"
-                      style={primaryColor ? { borderColor: `${primaryColor}70` } : undefined}
-                      title="Upload app logo"
-                    >
-                      {logoPreview ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={logoPreview} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full flex-col items-center justify-center gap-1.5" style={primaryColor ? { background: `${primaryColor}12` } : undefined}>
-                          <Camera className="h-7 w-7 text-stone-300 group-hover:text-teal-500 transition-colors" />
-                          <span className="text-[10px] font-medium text-stone-300 group-hover:text-teal-500 transition-colors">Upload</span>
-                        </div>
-                      )}
+                {/* ── Step 1: Identity ── */}
+                <FormSection step={1} title="App Identity" subtitle="Logo and brand color">
+                  <div className="flex items-start gap-8">
+                    <div className="flex flex-col items-center gap-2 shrink-0">
+                      <p className={sectionLabel}>Logo</p>
+                      <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        className="group relative h-[100px] w-[100px] overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/80 hover:border-sky-400 transition-all"
+                        style={primaryColor ? { borderColor: `${primaryColor}70` } : undefined}
+                        title="Upload app logo"
+                      >
+                        {logoPreview ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={logoPreview} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full flex-col items-center justify-center gap-1.5" style={primaryColor ? { background: `${primaryColor}12` } : undefined}>
+                            <Camera className="h-7 w-7 text-slate-300 group-hover:text-sky-500 transition-colors" />
+                            <span className="text-[10px] font-medium text-slate-300 group-hover:text-sky-500 transition-colors">Upload</span>
+                          </div>
+                        )}
+                        {logoPreview && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera className="h-5 w-5 text-white" />
+                          </div>
+                        )}
+                      </button>
                       {logoPreview && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Camera className="h-5 w-5 text-white" />
-                        </div>
+                        <button type="button" onClick={() => { URL.revokeObjectURL(logoPreview); setLogoFile(null); setLogoPreview(null) }} className="text-[10px] text-slate-400 hover:text-red-500 transition-colors">
+                          Remove
+                        </button>
                       )}
-                    </button>
-                    {logoPreview && (
-                      <button type="button" onClick={() => { URL.revokeObjectURL(logoPreview); setLogoFile(null); setLogoPreview(null) }} className="text-[10px] text-stone-400 hover:text-red-500 transition-colors">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <p className={cn(sectionLabel, 'mb-4')}>Brand Colour</p>
-                    <div className="grid grid-cols-6 gap-2.5">
-                      {PALETTE.map(({ hex, label }) => (
-                        <button
-                          key={hex} type="button" title={label}
-                          onClick={() => setPrimaryColor(c => c === hex ? null : hex)}
-                          className={cn('h-9 w-full rounded-xl transition-all hover:scale-105 active:scale-95', primaryColor === hex && 'ring-2 ring-offset-2 ring-stone-400 scale-105')}
-                          style={{ background: hex }} aria-pressed={primaryColor === hex} aria-label={label}
-                        />
-                      ))}
                     </div>
-                    {primaryColor && (
-                      <button type="button" onClick={() => setPrimaryColor(null)} className="mt-2.5 text-[10px] text-stone-400 hover:text-stone-600 transition-colors">
-                        Clear colour
-                      </button>
-                    )}
-                  </div>
-                </div>
 
-                {/* Screenshots */}
-                <div>
-                  <p className={cn(sectionLabel, 'mb-4')}>
-                    Screenshots <span className="ml-1 text-teal-600 normal-case tracking-normal font-normal text-xs">* required</span>
-                  </p>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(sectionLabel, 'mb-4')}>Brand Colour</p>
+                      <div className="grid grid-cols-6 gap-2.5">
+                        {PALETTE.map(({ hex, label }) => (
+                          <button
+                            key={hex} type="button" title={label}
+                            onClick={() => setPrimaryColor(c => c === hex ? null : hex)}
+                            className={cn('h-9 w-full rounded-xl transition-all hover:scale-105 active:scale-95', primaryColor === hex && 'ring-2 ring-offset-2 ring-slate-400 scale-105')}
+                            style={{ background: hex }} aria-pressed={primaryColor === hex} aria-label={label}
+                          />
+                        ))}
+                      </div>
+                      {primaryColor && (
+                        <button type="button" onClick={() => setPrimaryColor(null)} className="mt-2.5 text-[10px] text-slate-400 hover:text-slate-600 transition-colors">
+                          Clear colour
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </FormSection>
+
+                {/* ── Step 2: Screenshots ── */}
+                <FormSection step={2} title="Screenshots" subtitle="At least one required · max 4">
                   <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => addFiles(e.target.files)} />
                   {uploads.length === 0 ? (
                     <button
                       type="button" onClick={() => fileInputRef.current?.click()}
                       onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}
                       className={cn('flex w-full flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed py-14 text-center transition-all',
-                        isDragging ? 'border-teal-400 bg-teal-50/60 scale-[0.995]' : 'border-stone-200/80 bg-stone-50/40 hover:border-teal-300 hover:bg-teal-50/30')}
+                        isDragging ? 'border-sky-400 bg-sky-50/60 scale-[0.995]' : 'border-slate-200/80 bg-slate-50/40 hover:border-sky-300 hover:bg-sky-50/30')}
                     >
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-teal-50 border border-teal-100">
-                        <Upload className="h-6 w-6 text-teal-600" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 border border-sky-100">
+                        <Upload className="h-6 w-6 text-sky-500" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-stone-700">Drop images here or <span className="text-teal-600">browse</span></p>
-                        <p className="mt-1 text-xs font-light text-stone-400">PNG, JPG up to 15 MB · max 4 files</p>
+                        <p className="text-sm font-semibold text-slate-700">Drop images here or <span className="text-sky-500">browse</span></p>
+                        <p className="mt-1 text-xs text-slate-400">PNG, JPG up to 15 MB · max 4 files</p>
                       </div>
                     </button>
                   ) : (
                     <div className="grid grid-cols-4 gap-3">
                       {uploads.map((u, i) => (
-                        <div key={i} className="relative aspect-[9/16] overflow-hidden rounded-xl border border-stone-200/80 bg-stone-50">
+                        <div key={i} className="relative aspect-[9/16] overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={u.preview} alt="" className="h-full w-full object-cover" />
                           <button type="button" onClick={() => removeFile(i)} className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors" aria-label="Remove">
@@ -558,18 +564,17 @@ export default function SubmitPage() {
                         </div>
                       ))}
                       {uploads.length < MAX_FILES && (
-                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex aspect-[9/16] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-200 bg-stone-50/60 text-stone-400 transition-all hover:border-teal-300 hover:bg-teal-50/30">
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex aspect-[9/16] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 text-slate-400 transition-all hover:border-sky-300 hover:bg-sky-50/30">
                           <ImagePlus className="h-5 w-5" />
                           <span className="text-[10px] font-medium">Add</span>
                         </button>
                       )}
                     </div>
                   )}
-                </div>
+                </FormSection>
 
-                {/* App Details */}
-                <div>
-                  <p className={cn(sectionLabel, 'mb-6')}>App Details</p>
+                {/* ── Step 3: Details ── */}
+                <FormSection step={3} title="App Details" subtitle="Tell people what you built">
                   <div className="flex flex-col gap-5">
                     <div className="grid grid-cols-2 gap-5">
                       <Field label="App Name" required>
@@ -595,29 +600,33 @@ export default function SubmitPage() {
                     </div>
                     <Field label="Description">
                       <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What does your app do? Who is it for?" maxLength={5000} rows={4} className={cn(inputCls, 'resize-y')} />
-                      <p className="mt-1 text-right text-[10px] text-stone-400">{description.length} / 5000</p>
+                      <p className="mt-1 text-right text-[10px] text-slate-400">{description.length} / 5000</p>
                     </Field>
                   </div>
-                </div>
+                </FormSection>
 
-                {/* Inline error (pre-scan only) */}
+                {/* Inline error */}
                 {formStatus === 'error' && (
-                  <div className="flex items-start gap-3 rounded-xl border border-red-200/80 bg-red-50/80 px-5 py-4 text-sm text-red-600">
+                  <div className="mx-0 mb-6 flex items-start gap-3 rounded-2xl border border-red-200/80 bg-red-50/80 px-5 py-4 text-sm text-red-600">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span className="whitespace-pre-line font-light">{formError}</span>
+                    <span className="whitespace-pre-line">{formError}</span>
                   </div>
                 )}
 
+                {/* Submit */}
                 <div className="flex items-center justify-between pt-2 pb-2">
-                  <Link href="/" className="text-sm font-medium text-stone-400 hover:text-stone-600 transition-colors">Cancel</Link>
+                  <Link href="/" className="text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">Cancel</Link>
                   <button
                     type="submit"
                     disabled={formStatus === 'scanning'}
-                    className="inline-flex items-center gap-2 rounded-full px-10 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-px active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
-                    style={{ backgroundColor: primaryColor ?? '#0f766e', boxShadow: `0 8px 24px -4px ${primaryColor ?? '#0f766e'}40` }}
+                    className="inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-px hover:shadow-xl active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                    style={{
+                      background: primaryColor ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)` : 'linear-gradient(135deg, #0EA5E9, #14B8A6)',
+                      boxShadow: `0 8px 24px -4px ${primaryColor ?? '#0EA5E9'}55`,
+                    }}
                   >
                     <Loader2 className={cn('h-4 w-4 animate-spin', formStatus !== 'scanning' && 'hidden')} />
-                    {formStatus === 'scanning' ? 'Running Security Audit...' : 'Submit App'}
+                    {formStatus === 'scanning' ? 'Running Security Audit…' : '🚀 Launch App'}
                   </button>
                 </div>
               </form>
@@ -631,21 +640,40 @@ export default function SubmitPage() {
   )
 }
 
-function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
+function FormSection({ step, title, subtitle, children }: {
+  step: number; title: string; subtitle: string; children: React.ReactNode
+}) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-stone-500">
-        {label}{required && <span className="ml-0.5 text-teal-500">*</span>}
-      </label>
-      {hint && <p className="text-[10px] font-light text-stone-400 -mt-0.5">{hint}</p>}
+    <div className="py-8 border-b border-slate-100/80 last:border-0">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-teal-400 text-xs font-black text-white shadow-sm">
+          {step}
+        </div>
+        <div>
+          <p className="text-sm font-black text-slate-900">{title}</p>
+          <p className="text-[11px] text-slate-400">{subtitle}</p>
+        </div>
+      </div>
       {children}
     </div>
   )
 }
 
-const sectionLabel = 'text-[11px] font-semibold uppercase tracking-wider text-stone-400'
+function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-semibold text-slate-500">
+        {label}{required && <span className="ml-0.5 text-sky-500">*</span>}
+      </label>
+      {hint && <p className="text-[10px] text-slate-400 -mt-0.5">{hint}</p>}
+      {children}
+    </div>
+  )
+}
+
+const sectionLabel = 'text-[11px] font-bold uppercase tracking-wider text-slate-400'
 
 const inputCls =
-  'w-full rounded-xl border border-stone-200/80 bg-white/60 px-4 py-3 text-sm text-stone-800 ' +
-  'placeholder:text-stone-300 placeholder:font-light outline-none transition-all duration-150 ' +
-  'focus:border-teal-400/70 focus:bg-white focus:ring-2 focus:ring-teal-400/15'
+  'w-full rounded-xl border border-slate-200/80 bg-white/60 px-4 py-3 text-sm text-slate-800 ' +
+  'placeholder:text-slate-300 outline-none transition-all duration-150 ' +
+  'focus:border-sky-400/70 focus:bg-white focus:ring-2 focus:ring-sky-400/15'

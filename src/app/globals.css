@@ -3,39 +3,38 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
-   Design tokens — Imagine light theme (cream + sage teal)
+   Design tokens — Imagine gamified theme
    --------------------------------------------------------------------------- */
 
 :root {
-  /*
-   * --header-pt: top padding consumed by the fixed header.
-   *   mobile  → 52px content area + iOS safe-area-inset-top
-   *   desktop → 88px (pill navbar height)
-   * Overridden at sm breakpoint below.
-   */
   --header-pt: calc(52px + env(safe-area-inset-top, 0px));
 
   /* Backgrounds */
-  --color-background: 253 253 249;   /* #FDFDF9  warm cream canvas */
-  --color-surface:    255 255 255;   /* #FFFFFF  cards, panels     */
-  --color-elevated:   249 248 244;   /* #F9F8F4  dropdowns, modals */
+  --color-background: 240 250 255;   /* #F0FAFF  pale ocean blue             */
+  --color-surface:    255 255 255;   /* #FFFFFF  cards, panels               */
+  --color-elevated:   236 246 255;   /* #ECF6FF  dropdowns, modals           */
 
   /* Borders */
-  --color-edge:       28 25 23;      /* stone-900, used at low opacity */
+  --color-edge: 15 23 42;            /* slate-900 */
 
   /* Text */
-  --color-text:       28 25 23;      /* #1C1917  stone-900 */
-  --color-muted:      120 113 108;   /* #78716C  stone-500 */
+  --color-text:  15  23  42;         /* #0F172A  slate-900 */
+  --color-muted: 100 116 139;        /* #64748B  slate-500 */
 
-  /* Accent — sage teal (pulled from Imagine logo) */
-  --color-accent:     45  139 122;   /* #2D8B7A */
-  --color-accent-dim: 20  100  85;   /* darker teal */
-  --color-accent-glow:80  170 155;   /* lighter teal */
+  /* Primary accent — sky blue */
+  --color-accent:     14 165 233;    /* #0EA5E9  sky-500   */
+  --color-accent-dim:  2 132 199;    /* #0284C7  sky-600   */
+  --color-accent-glow: 56 189 248;   /* #38BDF8  sky-400   */
+
+  /* Secondary — teal */
+  --color-teal:        20 184 166;   /* #14B8A6  teal-500  */
+
+  /* XP gold */
+  --color-xp: 245 158 11;            /* #F59E0B amber-500 */
 
   --ring-focus: rgb(var(--color-accent) / 0.35);
 }
 
-/* Override --header-pt for sm+ (desktop pill navbar is 88px) */
 @media (min-width: 640px) {
   :root { --header-pt: 88px; }
 }
@@ -45,11 +44,7 @@
    --------------------------------------------------------------------------- */
 
 @layer base {
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   html {
     scrollbar-gutter: stable;
@@ -58,7 +53,7 @@
 
   body {
     background-color: rgb(var(--color-background));
-    color:            rgb(var(--color-text));
+    color: rgb(var(--color-text));
     font-feature-settings: "rlig" 1, "calt" 1;
     @apply antialiased;
   }
@@ -69,7 +64,6 @@
     border-radius: 4px;
   }
 
-  /* Soft scrollbar */
   ::-webkit-scrollbar       { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgb(var(--color-background)); }
   ::-webkit-scrollbar-thumb { background: rgb(var(--color-edge) / 0.12); border-radius: 3px; }
@@ -77,17 +71,17 @@
 
   ::selection {
     background: rgb(var(--color-accent) / 0.18);
-    color:      rgb(var(--color-accent-dim));
+    color: rgb(var(--color-accent-dim));
   }
 }
 
 /* ---------------------------------------------------------------------------
-   Hero entry animations
+   Keyframes
    --------------------------------------------------------------------------- */
 
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fade-in {
@@ -96,28 +90,46 @@
 }
 
 @keyframes float-y {
-  0%, 100% { transform: translateY(0px);   }
+  0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-9px); }
 }
 
 @keyframes float-y-slow {
-  0%, 100% { transform: translateY(0px);   }
+  0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-6px); }
 }
 
 @keyframes float-y-fast {
-  0%, 100% { transform: translateY(0px);   }
+  0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-13px); }
 }
 
 @keyframes cta-pulse {
-  0%, 100% { box-shadow: 0 0 0 0   rgba(45, 139, 122, 0.45); }
-  50%       { box-shadow: 0 0 0 10px rgba(45, 139, 122, 0);   }
+  0%, 100% { box-shadow: 0 0 0 0   rgba(14, 165, 233, 0.45); }
+  50%       { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+}
+
+@keyframes xp-pop {
+  0%   { opacity: 0; transform: translateY(0) scale(0.7); }
+  60%  { opacity: 1; transform: translateY(-18px) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-32px) scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+
+@keyframes bounce-in {
+  0%   { transform: scale(0.7); opacity: 0; }
+  55%  { transform: scale(1.08); opacity: 1; }
+  80%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
 }
 
 @keyframes modal-in {
   from { opacity: 0; transform: scale(0.96) translateY(10px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @keyframes scan-progress {
@@ -133,8 +145,8 @@
 }
 
 @keyframes security-glow {
-  0%, 100% { box-shadow: 0 0 12px rgba(20,184,166,0.3), 0 0 24px rgba(20,184,166,0.1); }
-  50%       { box-shadow: 0 0 24px rgba(20,184,166,0.6), 0 0 48px rgba(20,184,166,0.2); }
+  0%, 100% { box-shadow: 0 0 12px rgba(14,165,233,0.3), 0 0 24px rgba(14,165,233,0.1); }
+  50%       { box-shadow: 0 0 24px rgba(14,165,233,0.6), 0 0 48px rgba(14,165,233,0.2); }
 }
 
 @keyframes subtle-pulse {
@@ -170,28 +182,31 @@
 }
 
 @layer utilities {
-  .animate-fade-up        { animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
-  .animate-fade-in        { animation: fade-in 0.5s ease both; }
-  .animate-float          { animation: float-y      3.5s ease-in-out infinite; }
-  .animate-float-slow     { animation: float-y-slow 4.5s ease-in-out 0.6s infinite; }
-  .animate-float-fast     { animation: float-y-fast 2.8s ease-in-out 1.2s infinite; }
-  .animate-modal-in       { animation: modal-in      0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
-  .animate-cta-pulse      { animation: cta-pulse     2.8s ease-in-out         infinite; }
-  .animate-subtle-pulse   { animation: subtle-pulse  4.0s ease-in-out 0.8s   infinite; }
-  .animate-scan-progress  { animation: scan-progress 3s   linear              forwards; }
-  .animate-scan-sweep     { animation: scan-sweep    1.8s ease-in-out         infinite; }
-  .animate-security-glow  { animation: security-glow 2.0s ease-in-out         infinite; }
-  .animate-terminal-cursor { animation: terminal-cursor 1.0s step-end           infinite; }
-  .animate-shield-pulse-red { animation: shield-pulse-red 2.0s ease-in-out      infinite; }
-  .animate-blob-1           { animation: blob-drift-1    18s  ease-in-out       infinite; }
-  .animate-blob-2           { animation: blob-drift-2    22s  ease-in-out 2s    infinite; }
-  .animate-blob-3           { animation: blob-drift-3    16s  ease-in-out 4s    infinite; }
-  .animation-delay-100    { animation-delay: 100ms; }
-  .animation-delay-200    { animation-delay: 200ms; }
-  .animation-delay-300    { animation-delay: 300ms; }
-  .animation-delay-400    { animation-delay: 400ms; }
-  .animation-delay-600    { animation-delay: 600ms; }
-  .animation-delay-800    { animation-delay: 800ms; }
+  .animate-fade-up           { animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-fade-in           { animation: fade-in 0.5s ease both; }
+  .animate-float             { animation: float-y      3.5s ease-in-out infinite; }
+  .animate-float-slow        { animation: float-y-slow 4.5s ease-in-out 0.6s infinite; }
+  .animate-float-fast        { animation: float-y-fast 2.8s ease-in-out 1.2s infinite; }
+  .animate-modal-in          { animation: modal-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-cta-pulse         { animation: cta-pulse 2.8s ease-in-out infinite; }
+  .animate-subtle-pulse      { animation: subtle-pulse 4.0s ease-in-out 0.8s infinite; }
+  .animate-scan-progress     { animation: scan-progress 3s linear forwards; }
+  .animate-scan-sweep        { animation: scan-sweep 1.8s ease-in-out infinite; }
+  .animate-security-glow     { animation: security-glow 2.0s ease-in-out infinite; }
+  .animate-terminal-cursor   { animation: terminal-cursor 1.0s step-end infinite; }
+  .animate-shield-pulse-red  { animation: shield-pulse-red 2.0s ease-in-out infinite; }
+  .animate-blob-1            { animation: blob-drift-1 18s ease-in-out infinite; }
+  .animate-blob-2            { animation: blob-drift-2 22s ease-in-out 2s infinite; }
+  .animate-blob-3            { animation: blob-drift-3 16s ease-in-out 4s infinite; }
+  .animate-bounce-in         { animation: bounce-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-shimmer           { animation: shimmer 2.5s linear infinite; }
+  .animate-xp-pop            { animation: xp-pop 1.2s ease-out forwards; }
+  .animation-delay-100  { animation-delay: 100ms; }
+  .animation-delay-200  { animation-delay: 200ms; }
+  .animation-delay-300  { animation-delay: 300ms; }
+  .animation-delay-400  { animation-delay: 400ms; }
+  .animation-delay-600  { animation-delay: 600ms; }
+  .animation-delay-800  { animation-delay: 800ms; }
 }
 
 /* ---------------------------------------------------------------------------
@@ -199,36 +214,51 @@
    --------------------------------------------------------------------------- */
 
 @layer components {
-  /* Floating card — white surface, very soft shadow */
+  /* Floating card */
   .card {
-    @apply rounded-2xl border border-stone-200/80 bg-white shadow-sm;
+    @apply rounded-3xl border border-stone-100 bg-white shadow-sm;
   }
 
   .card-hover {
     @apply card transition-all duration-200
-           hover:-translate-y-0.5
-           hover:border-stone-300/80
-           hover:shadow-md hover:shadow-stone-200/60;
+           hover:-translate-y-1
+           hover:shadow-lg hover:shadow-violet-100/60;
   }
 
-  /* Gradient text — teal */
+  /* Gradient text — ocean blue brand */
   .gradient-text {
-    @apply bg-gradient-to-r from-teal-700 to-teal-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-sky-500 via-teal-400 to-cyan-400 bg-clip-text text-transparent;
   }
 
-  /* Gradient text — vivid purple → fuchsia → orange (hero brand) */
   .gradient-text-vivid {
-    @apply bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-sky-600 via-teal-500 to-cyan-400 bg-clip-text text-transparent;
   }
 
-  /* Hide scrollbar but keep scroll behaviour (trending strips) */
+  /* XP badge */
+  .xp-badge {
+    @apply inline-flex items-center gap-0.5 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-bold text-amber-600;
+  }
+
+  /* Level badge */
+  .level-badge {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider;
+  }
+
+  /* Progress bar track */
+  .progress-track {
+    @apply h-2 rounded-full bg-stone-100 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full bg-gradient-to-r from-sky-500 to-teal-400 transition-all duration-700;
+  }
+
+  /* Hide scrollbar */
   .scrollbar-hide {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 
   /* Pill badge */
   .badge {
@@ -236,19 +266,20 @@
   }
 
   .badge-accent {
-    @apply badge border-teal-200 bg-teal-50 text-teal-700;
+    @apply badge border-sky-200 bg-sky-50 text-sky-700;
   }
 
-  /* Primary button — sage teal */
+  /* Primary button — ocean gradient */
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white
-           transition-all duration-150 hover:bg-teal-600 active:scale-95
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40;
+    @apply inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-teal-400 px-5 py-2.5 text-sm font-bold text-white
+           shadow-md shadow-sky-200/60
+           transition-all duration-150 hover:opacity-90 hover:shadow-lg hover:shadow-sky-200/80 hover:-translate-y-px active:scale-95
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/40;
   }
 
   /* Ghost button */
   .btn-ghost {
-    @apply inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-500
+    @apply inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-stone-500
            transition-colors hover:bg-stone-100 hover:text-stone-800
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300;
   }
