@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, X, Compass, ArrowUpRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Search, X, Compass, ArrowUpRight, Star, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiClient } from '@/lib/api/client'
 
@@ -89,47 +90,65 @@ function ExploreInner() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#FDFCF8] animate-fade-in">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
+    <div className="min-h-[calc(100vh-4rem)] bg-background">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2.5 mb-1">
-            <Compass className="h-5 w-5 text-teal-600" />
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 text-center sm:text-left"
+        >
+          <div className="inline-flex items-center gap-2.5 mb-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-200/50">
+              <Compass className="h-5 w-5 text-white" />
+            </div>
             <h1 className="text-2xl font-bold text-stone-900">Explore Apps</h1>
           </div>
-          <p className="text-sm text-stone-500">Discover published apps from the community.</p>
-        </div>
+          <p className="text-sm text-stone-500">Discover published apps from the community</p>
+        </motion.div>
 
         {/* Search bar */}
-        <div className="relative mb-6">
-          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative mb-6"
+        >
+          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
           <input
             type="search"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search apps…"
+            placeholder="Search apps..."
             className={cn(
-              'w-full rounded-2xl border border-stone-200 bg-white py-3.5 pl-11 pr-10 text-sm text-stone-800',
-              'placeholder:text-stone-400 outline-none transition shadow-sm',
-              'focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20',
+              'w-full rounded-2xl border-2 border-stone-200 bg-white py-4 pl-12 pr-12 text-base text-stone-800',
+              'placeholder:text-stone-400 outline-none transition-all shadow-lg shadow-stone-100/50',
+              'focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100',
             )}
           />
           {query && (
-            <button
+            <motion.button
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
               type="button"
               onClick={() => setQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors"
               aria-label="Clear search"
             >
               <X className="h-4 w-4" />
-            </button>
+            </motion.button>
           )}
-        </div>
+        </motion.div>
 
         {/* Category filter pills */}
         {categories.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8 flex flex-wrap gap-2 justify-center sm:justify-start"
+          >
             <FilterPill label="All" active={!activeCategory} onClick={() => selectCategory(null)} />
             {categories.map(cat => (
               <FilterPill
@@ -139,24 +158,36 @@ function ExploreInner() {
                 onClick={() => selectCategory(cat.name)}
               />
             ))}
-          </div>
+          </motion.div>
         )}
 
         {/* Results */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-52 rounded-2xl bg-stone-100 animate-pulse" />
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="h-56 rounded-3xl bg-stone-100 animate-pulse" 
+              />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState category={activeCategory?.name ?? null} hasQuery={query.trim().length > 0} />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map(app => (
-              <AppCard key={app.id} app={app} />
-            ))}
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+          >
+            <AnimatePresence>
+              {filtered.map((app, index) => (
+                <AppCard key={app.id} app={app} index={index} />
+              ))}
+            </AnimatePresence>
+          </motion.div>
         )}
 
       </div>
@@ -171,8 +202,11 @@ function ExploreInner() {
 export default function ExplorePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[calc(100vh-4rem)] bg-[#FDFCF8] flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+      <div className="min-h-[calc(100vh-4rem)] bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin" />
+          <span className="text-sm font-semibold text-stone-500">Loading apps...</span>
+        </div>
       </div>
     }>
       <ExploreInner />
@@ -181,60 +215,84 @@ export default function ExplorePage() {
 }
 
 // ---------------------------------------------------------------------------
-// AppCard — fun vertical grid card
+// AppCard — gamified grid card
 // ---------------------------------------------------------------------------
 
-function AppCard({ app }: { app: App }) {
-  const color = app.primaryColor ?? '#0D9488'
+function AppCard({ app, index }: { app: App; index: number }) {
+  const color = app.primaryColor ?? '#10B981'
 
   return (
-    <Link
-      href={`/apps/${app.slug}`}
-      className="group flex flex-col rounded-2xl overflow-hidden border border-stone-200/80 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+    <motion.div
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ delay: index * 0.05, type: 'spring', stiffness: 100 }}
+      whileHover={{ y: -8, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {/* Colored top with floating icon */}
-      <div
-        className="relative flex h-[88px] shrink-0 items-center justify-center"
-        style={{ background: `linear-gradient(135deg, ${color}28 0%, ${color}55 100%)` }}
+      <Link
+        href={`/apps/${app.slug}`}
+        className="group flex flex-col rounded-3xl overflow-hidden border-2 border-stone-200/60 bg-white shadow-xl shadow-stone-100/50 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-100/40 transition-all duration-300 cursor-pointer"
       >
-        <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white shadow-md ring-2 ring-white/80">
-          {app.iconUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={app.iconUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div
-              className="flex h-full w-full items-center justify-center text-xl font-bold text-white"
+        {/* Colored top with floating icon */}
+        <div
+          className="relative flex h-24 shrink-0 items-center justify-center"
+          style={{ background: `linear-gradient(135deg, ${color}30 0%, ${color}60 100%)` }}
+        >
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className="h-16 w-16 overflow-hidden rounded-2xl bg-white shadow-lg ring-4 ring-white/80"
+          >
+            {app.iconUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={app.iconUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center text-2xl font-bold text-white"
+                style={{ background: color }}
+              >
+                {app.name[0]?.toUpperCase() ?? '?'}
+              </div>
+            )}
+          </motion.div>
+          
+          {/* XP badge */}
+          <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold text-purple-600 shadow-sm backdrop-blur-sm">
+            <Star className="h-3 w-3 fill-current" />
+            +50
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-1 flex-col p-4">
+          <h3 className="text-sm font-bold text-stone-900 truncate group-hover:text-emerald-600 transition-colors">
+            {app.name}
+          </h3>
+          <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed flex-1">
+            {app.tagline}
+          </p>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-stone-400">
+              {app._count?.launchEvents ? (
+                <>
+                  <Sparkles className="h-3 w-3" />
+                  {app._count.launchEvents}
+                </>
+              ) : (
+                'New'
+              )}
+            </span>
+            <motion.span
+              whileHover={{ scale: 1.05 }}
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-bold text-white shadow-md transition-all duration-200"
               style={{ background: color }}
             >
-              {app.name[0]?.toUpperCase() ?? '?'}
-            </div>
-          )}
+              Open <ArrowUpRight className="h-3 w-3" />
+            </motion.span>
+          </div>
         </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-1 flex-col p-3.5">
-        <h3 className="text-sm font-bold text-stone-900 truncate group-hover:text-teal-700 transition-colors">
-          {app.name}
-        </h3>
-        <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed flex-1">
-          {app.tagline}
-        </p>
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-[10px] font-medium text-stone-400">
-            {app._count?.launchEvents
-              ? `${app._count.launchEvents} launch${app._count.launchEvents === 1 ? '' : 'es'}`
-              : 'New'}
-          </span>
-          <span
-            className="inline-flex items-center gap-0.5 rounded-full px-2.5 py-1 text-[10px] font-semibold text-white transition-all duration-150 group-hover:gap-1"
-            style={{ background: color }}
-          >
-            Open <ArrowUpRight className="h-3 w-3" />
-          </span>
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   )
 }
 
@@ -248,18 +306,20 @@ function FilterPill({ label, active, onClick }: {
   onClick: () => void
 }) {
   return (
-    <button
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-150',
+        'rounded-full border-2 px-4 py-2 text-xs font-bold transition-all duration-200',
         active
-          ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
-          : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400 hover:bg-stone-50',
+          ? 'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-200/50'
+          : 'border-stone-200 bg-white text-stone-600 hover:border-emerald-300 hover:bg-emerald-50',
       )}
     >
       {label}
-    </button>
+    </motion.button>
   )
 }
 
@@ -269,32 +329,51 @@ function FilterPill({ label, active, onClick }: {
 
 function EmptyState({ category, hasQuery }: { category: string | null; hasQuery: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="mb-4 text-5xl">
-        {hasQuery ? '🔍' : category ? '📂' : '✨'}
-      </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <motion.div 
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', delay: 0.1 }}
+        className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-stone-100"
+      >
+        <span className="text-4xl">
+          {hasQuery ? '🔍' : category ? '📂' : '✨'}
+        </span>
+      </motion.div>
       {category ? (
         <>
-          <h2 className="text-base font-bold text-stone-800">Nothing in {category} yet</h2>
-          <p className="mt-1.5 text-sm text-stone-500 max-w-xs">
+          <h2 className="text-lg font-bold text-stone-800">Nothing in {category} yet</h2>
+          <p className="mt-2 text-sm text-stone-500 max-w-xs">
             Be the first to submit an app in this category.
           </p>
         </>
       ) : hasQuery ? (
         <>
-          <h2 className="text-base font-bold text-stone-800">No results</h2>
-          <p className="mt-1.5 text-sm text-stone-500 max-w-xs">
+          <h2 className="text-lg font-bold text-stone-800">No results</h2>
+          <p className="mt-2 text-sm text-stone-500 max-w-xs">
             Try different keywords or browse everything.
           </p>
         </>
       ) : (
         <>
-          <h2 className="text-base font-bold text-stone-800">No apps published yet</h2>
-          <p className="mt-1.5 text-sm text-stone-500 max-w-xs">
-            Check back soon — apps are being reviewed.
+          <h2 className="text-lg font-bold text-stone-800">No apps published yet</h2>
+          <p className="mt-2 text-sm text-stone-500 max-w-xs">
+            Check back soon apps are being reviewed.
           </p>
         </>
       )}
-    </div>
+      <motion.a
+        href="/submit"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200/50"
+      >
+        Submit an app
+      </motion.a>
+    </motion.div>
   )
 }

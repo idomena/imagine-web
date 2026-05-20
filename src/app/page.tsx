@@ -1,22 +1,17 @@
-import Link from 'next/link'
-import { Sparkles, AlertCircle } from 'lucide-react'
-import { AppCard }        from '@/components/apps/AppCard'
-import { FeedSection }    from '@/components/feed/FeedSection'
-import { HeroOrWelcome }  from '@/components/home/HeroOrWelcome'
-import { HeroInput }      from '@/components/home/HeroInput'
-import { GuestBrowseLink } from '@/components/home/GuestBrowseLink'
-import { apiClient }      from '@/lib/api/client'
+import { AlertCircle } from 'lucide-react'
+import { GamifiedFeed } from '@/components/gamified/GamifiedFeed'
+import { GamificationProvider } from '@/components/gamified/GamificationContext'
+import { apiClient } from '@/lib/api/client'
 import type { ApiResponse, App, Category, Paginated } from '@/lib/api/types'
-import type { AppBadge } from '@/components/apps/AppCard'
 
 // ---------------------------------------------------------------------------
 // Data fetching
 // ---------------------------------------------------------------------------
 
 interface FeedData {
-  apps:       App[]
+  apps: App[]
   categories: Category[]
-  error?:     string
+  error?: string
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -41,115 +36,32 @@ async function getFeedData(): Promise<FeedData> {
   }
 }
 
-function computeBadge(publishedAt: Date | string | null | undefined): AppBadge | undefined {
-  if (!publishedAt) return undefined
-  const d = publishedAt instanceof Date ? publishedAt : new Date(publishedAt as string)
-  if (isNaN(d.getTime())) return undefined
-  const days = (Date.now() - d.getTime()) / 86_400_000
-  if (days <= 7)  return 'new'
-  if (days <= 30) return 'trending'
-  return undefined
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
   const { apps, categories, error } = await getFeedData()
-  const categoryMap = new Map(categories.map((c) => [c.id, c.name]))
 
   return (
-    <div className="relative min-h-screen bg-[#FDFCF8]">
-
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <HeroOrWelcome hero={
-        <section className="relative sm:-mt-[88px]" style={{ minHeight: '100svh' }}>
-
-          {/* Dot grid texture */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.35]"
-            style={{
-              backgroundImage: 'radial-gradient(circle, #c4c4b8 1px, transparent 1px)',
-              backgroundSize: '28px 28px',
-            }}
-          />
-
-          {/* Soft radial glow behind headline */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 h-[500px] w-[800px] rounded-full opacity-30"
-            style={{ background: 'radial-gradient(ellipse at center, #818cf8 0%, transparent 65%)' }}
-          />
-
-          <div className="relative z-10 flex min-h-[inherit] flex-col items-center justify-center px-5 sm:px-8 pb-20 sm:pb-32 pt-28 sm:pt-48">
-            <div className="flex w-full max-w-4xl flex-col items-center text-center">
-
-              {/* Eyebrow badge */}
-              <div className="animate-fade-up mb-8 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-violet-700">
-                <Sparkles className="h-3 w-3" aria-hidden />
-                AI App Marketplace
-              </div>
-
-              {/* Headline */}
-              <h1 className="animate-fade-up animation-delay-100 text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-stone-900">
-                Discover &amp; Launch{' '}
-                <span className="bg-gradient-to-r from-teal-500 via-violet-500 to-orange-400 bg-clip-text text-transparent">
-                  AI Apps
-                </span>
-              </h1>
-
-              {/* Punchy subline */}
-              <p className="animate-fade-up animation-delay-200 mt-5 text-xl sm:text-2xl font-semibold text-stone-400">
-                Apple won&apos;t.{' '}
-                <span className="text-stone-700">Imagine will.</span>
-              </p>
-
-              {/* Input */}
-              <div className="animate-fade-up animation-delay-300 mt-10 w-full max-w-2xl">
-                <HeroInput />
-              </div>
-
-              {/* Browse link */}
-              <p className="animate-fade-up animation-delay-400 mt-5 text-sm text-stone-400">
-                or <GuestBrowseLink />
-              </p>
-
+    <GamificationProvider>
+      <div className="relative min-h-screen bg-background">
+        {/* API error banner */}
+        {error && (
+          <div className="mx-auto max-w-md px-4 pt-4">
+            <div className="flex items-center gap-3 rounded-2xl border-2 border-red-200 bg-red-50 p-4 text-sm text-red-600">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              {error}
             </div>
           </div>
-        </section>
-      } />
+        )}
 
-      {/* ── API error banner ──────────────────────────────────────────────── */}
-      {error && (
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 pb-2">
-          <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            {error}
-          </div>
-        </div>
-      )}
-
-      {/* ── Discovery feed ────────────────────────────────────────────────── */}
-      <FeedSection
-        title="All Apps"
-        count={apps.length}
-        subtitle="Published and ready to launch"
-        viewAllHref="/explore"
-        variant="list"
-        className="pt-5"
-        emptyState={apps.length === 0 && !error ? <EmptyFeed /> : undefined}
-      >
-        {apps.map((app) => (
-          <AppCard
-            key={app.id}
-            app={app}
-            badge={computeBadge(app.publishedAt)}
-            categoryName={app.categoryId ? categoryMap.get(app.categoryId) : undefined}
-          />
-        ))}
-      </FeedSection>
-
-    </div>
+        {/* Main gamified feed */}
+        {apps.length > 0 ? (
+          <GamifiedFeed apps={apps} categories={categories} />
+        ) : !error ? (
+          <EmptyFeed />
+        ) : null}
+      </div>
+    </GamificationProvider>
   )
 }
 
@@ -157,15 +69,17 @@ export default async function HomePage() {
 
 function EmptyFeed() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-stone-200 bg-white py-16 text-center shadow-sm">
-      <div className="text-4xl mb-4">🚀</div>
-      <p className="font-bold text-stone-800 text-lg">No apps yet</p>
-      <p className="mt-1.5 text-sm text-stone-500 max-w-xs">
-        Be the first to launch something great on Imagine.
-      </p>
-      <Link href="/submit" className="btn-primary mt-6 text-sm">
-        Submit your app
-      </Link>
+    <div className="mx-auto max-w-md px-4 py-20">
+      <div className="flex flex-col items-center justify-center rounded-3xl border-4 border-dashed border-emerald-200 bg-emerald-50/50 py-16 text-center">
+        <div className="text-5xl mb-4">🚀</div>
+        <p className="font-bold text-stone-800 text-xl">No apps yet</p>
+        <p className="mt-2 text-base text-stone-500 max-w-xs">
+          Be the first to launch something great on Imagine.
+        </p>
+        <a href="/submit" className="btn-primary mt-6">
+          Submit your app
+        </a>
+      </div>
     </div>
   )
 }
